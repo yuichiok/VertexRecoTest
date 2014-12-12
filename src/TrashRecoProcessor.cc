@@ -159,7 +159,7 @@ namespace TTbarAnalysis
 			_hTree->Fill();
 			_hTaggedTree->Fill();
 			ClearVariables();
-			/*vector< Vertex * > unknown = reco.GetUnknownVertexes();
+			vector< Vertex * > unknown = reco.GetUnknownVertexes();
 			for (int i = 0; i < unknown.size(); i++) 
 			{
 				Write(unknown[i],i);
@@ -167,7 +167,7 @@ namespace TTbarAnalysis
 			std::cout << "We have " << unknown.size() << " unknown vertices\n";
 			_numberOfUnknown = unknown.size();
 			_hUntaggedTree->Fill();
-			ClearVariables();*/
+			ClearVariables();
 	
 		}
 		catch( DataNotAvailableException &e)
@@ -228,6 +228,8 @@ namespace TTbarAnalysis
 		for (int i = 0; i < MAXV; i++) 
 		{
 			_probability[i] = -1.0;
+			_PDG[i] = 0;
+			_generation[i] = 0;
 			_chi2[i] = -1.0;
 			_distanceFromIP[i] = -1.0;
 			for (int j = 0; j < MAXV; j++) 

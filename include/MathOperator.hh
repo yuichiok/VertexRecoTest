@@ -26,6 +26,7 @@ namespace TTbarAnalysis
 			static float getModule(const double * vector1);
 			
 			static std::vector< float > getAngles(std::vector< float > & direction);
+			static float getAngle(const double * vector1, const double * vector2);
 
 			static bool approximatelyEqual(const double * start1, const double * end);
 			static float getDistance(const double * start, const double * end);

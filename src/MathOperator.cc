@@ -112,6 +112,21 @@ namespace TTbarAnalysis
 		result.push_back(teta);
 		return result;
 	}
+	float MathOperator::getAngle(const double * vector1, const double * vector2)
+	{
+		float module1 = getModule(vector1);
+		float module2 = getModule(vector2);
+		if (module1 < 0.00000000001 || module2 < 0.000000000001) 
+		{	
+			return 10e10;
+		}
+		double product = 0.0;
+		for (int i = 0; i < 3; i++) 
+		{
+			product += vector1[i]*vector2[i];
+		}
+		return acos((float)product/module1/module2);
+	}
 	vector< float > MathOperator::getDirection(const double * vectorPoint)
 	{
 		float module = getModule(vectorPoint);

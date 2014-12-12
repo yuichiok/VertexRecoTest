@@ -35,31 +35,40 @@ namespace TTbarAnalysis
 	vector< VertexTag * > * VertexRecoOperator::CompareDirection(LCCollection * reconstructed, LCCollection * mc)
 	{
 		int number = reconstructed->getNumberOfElements();
+		int mcnumber = mc->getNumberOfElements();
 		vector< VertexTag * > * result = new vector< VertexTag * >();
 		for (int i = 0; i < number; i++) 
 		{
 			Vertex * recovertex = dynamic_cast< Vertex * >( reconstructed->getElementAt(i) ) ;
-			vector<float> angles = getAngles(recovertex);
-			int mcnumber = mc->getNumberOfElements();
+			//vector<float> angles = getAngles(recovertex);
+			bool passed = false;
 			for (int j = 0; j < mcnumber; j++) 
 			{
 				Vertex * mcvertex = dynamic_cast< Vertex * >( mc->getElementAt(j) ) ;
-				vector<float> mcangles = getAngles(mcvertex);
-				bool notPassed = false;
-				for (int k = 0; k < mcangles.size(); k++) 
+				passed = false;
+				//vector<float> mcangles = getAngles(mcvertex);
+				/*for (int k = 0; k < mcangles.size(); k++) 
 				{
 					std::cout << "Angle difference: " << mcangles[k] - angles[k] << '\n';
 					if (abs(mcangles[k] - angles[k]) > myAngleCut) 
 					{
-						notPassed = true;
-						break;
+						failed = true;
+						//break;
 					}
-				}
-				if (!notPassed) 
+				}*/
+				float angle = MathOperator::getAngle(mcvertex->getAssociatedParticle()->getMomentum(), recovertex->getAssociatedParticle()->getMomentum());
+				std::cout << "Angle: " << angle  << '\n';
+				if (angle < myAngleCut) 
 				{
+					std::cout << "Vertex tagged with pdg " << mcvertex->getParameters()[1] << '\n';
+					passed = true;
 					result->push_back(new VertexTag(recovertex, mcvertex));
 					break;
 				}
+			}
+			if (!passed) 
+			{
+				myUnknownVertexes.push_back(recovertex);
 			}
 		}
 		return result;
@@ -143,7 +152,13 @@ namespace TTbarAnalysis
 	vector<float> VertexRecoOperator::getAngles(EVENT::Vertex * vertex)
 	{
 		ReconstructedParticle * particle = vertex->getAssociatedParticle();
-		vector<float> direction = MathOperator::getDirection(particle->getMomentum());
+		const float * position = vertex->getPosition();
+		double convert[3];
+		for (int i = 0; i < 3; i++) 
+		{
+			convert[i] = position[i];
+		}
+		vector<float> direction = MathOperator::getDirection(convert);//particle->getMomentum());
 		return MathOperator::getAngles(direction);
 	}
 } /* TTbarAnalysis */
