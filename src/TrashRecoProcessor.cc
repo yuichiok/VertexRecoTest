@@ -122,6 +122,11 @@ namespace TTbarAnalysis
 			LCCollection* col = evt->getCollection( _colSecName );
 			LCCollection* mc = evt->getCollection( _colMCName );
 			int number = col->getNumberOfElements();
+			_nEvt ++ ;
+			if (mc->getNumberOfElements() == 0) 
+			{
+				return;
+			}
 			VertexRecoOperator reco;
 			//vector< VertexTag * > * tagged = reco.Compare(col, mc);
 			vector< VertexTag * > * tagged = reco.CompareDirection(col, mc);
@@ -174,7 +179,6 @@ namespace TTbarAnalysis
 		{
 			streamlog_out(DEBUG) << "No collection!" << std::endl ;
 		}
-		_nEvt ++ ;
 	}
 	void TrashRecoProcessor::Write (Vertex * vertex, int number)
 	{
