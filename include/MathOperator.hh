@@ -41,6 +41,9 @@ namespace TTbarAnalysis
 			static std::vector< float > getDirection(const double * vectorPoint);
 			static std::vector< std::vector< int > * > * GetMagicNumbers();
 			static std::vector< int > * getPoint(int x, int y, int z);
+			static double * getPtOnVector(const double * momentum, const float * target);
+			static double getMissingPt(std::vector< const double * > & vectors, const float * target);
+			static double * toDoubleArray(const float * target, int size);
 		private:
 		//
 		//	Data

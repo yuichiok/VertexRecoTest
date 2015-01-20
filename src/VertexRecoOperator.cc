@@ -8,9 +8,14 @@ namespace TTbarAnalysis
 {
 	VertexRecoOperator:: VertexRecoOperator() 
 	{
-		myAngleCut = 0.08;
+		myAngleCut = 0.151;
 		myPrecisionCut = 1.5;
 	}
+	VertexRecoOperator:: VertexRecoOperator(float angle)
+	{
+		myAngleCut = angle;
+		myPrecisionCut = 1.5;
+ 	}	
 	vector< VertexTag * > * VertexRecoOperator::Compare(LCCollection * reconstructed, LCCollection * mc)
 	{
 		int number = reconstructed->getNumberOfElements();
@@ -40,27 +45,16 @@ namespace TTbarAnalysis
 		for (int i = 0; i < number; i++) 
 		{
 			Vertex * recovertex = dynamic_cast< Vertex * >( reconstructed->getElementAt(i) ) ;
-			//vector<float> angles = getAngles(recovertex);
 			bool passed = false;
 			for (int j = 0; j < mcnumber; j++) 
 			{
 				Vertex * mcvertex = dynamic_cast< Vertex * >( mc->getElementAt(j) ) ;
 				passed = false;
-				//vector<float> mcangles = getAngles(mcvertex);
-				/*for (int k = 0; k < mcangles.size(); k++) 
-				{
-					std::cout << "Angle difference: " << mcangles[k] - angles[k] << '\n';
-					if (abs(mcangles[k] - angles[k]) > myAngleCut) 
-					{
-						failed = true;
-						//break;
-					}
-				}*/
 				float angle = MathOperator::getAngle(mcvertex->getAssociatedParticle()->getMomentum(), recovertex->getAssociatedParticle()->getMomentum());
 				std::cout << "Angle: " << angle  << '\n';
 				if (angle < myAngleCut) 
 				{
-					std::cout << "Vertex tagged with pdg " << mcvertex->getParameters()[1] << '\n';
+					std::cout << "Vertex tagged with pdg " << mcvertex->getParameters()[1] << " n-tracks: " << recovertex->getAssociatedParticle()->getParticles().size() << '\n';
 					passed = true;
 					result->push_back(new VertexTag(recovertex, mcvertex));
 					break;

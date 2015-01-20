@@ -60,6 +60,8 @@ namespace TTbarAnalysis
 	  void Write(Vertex * vertex, int number);
 	  Vertex * FindPrimaryVertex(const LCCollection * collection); 
 	  void PrintParticle(ReconstructedParticle * particle);
+	  float getMissingPt(std::vector< ReconstructedParticle * > & bdaugthers, std::vector< VertexTag * > * tags, int pdg);
+	  VertexTag * getBvertex(std::vector< VertexTag * > * tags, int pdg);
 	  void ClearVariables();
 	 protected:
 	
@@ -77,17 +79,28 @@ namespace TTbarAnalysis
 	  TTree * _hTaggedTree;
 	  TTree * _hUntaggedTree;
 	  std::string _hfilename ;
-	  
+	  float _angleAcceptance;	  
 
 	  int _numberOfTagged;
 	  int _numberOfTotal;
 	  int _numberOfTernary;
 	  int _numberOfSecondary;
 	  int _numberOfUnknown;
+	  int _bnumber1;
+	  int _bbarnumber1;
+	  int _bexists;
+	  int _bbarexists;
+	  int _bcharge;
+	  int _bbarcharge;
+	  float _btag;
+	  float _bbartag;
+	  float _bptmiss;
+	  float _bbarptmiss;
 	  static const int MAXV2 = 36;
 	  float _distances[MAXV2];
 	  int _numberOfDistances;
 	  static const int MAXV = 15;
+	  float _btags[MAXV];
 	  float _distanceFromIP[MAXV];
 	  float _coordinates[MAXV][3];
 	  int _PDG[MAXV];

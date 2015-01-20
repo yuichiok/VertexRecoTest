@@ -8,6 +8,7 @@ namespace TTbarAnalysis
 	{
 		myRecoVertex = recoVertex;
 		myMCVertex = mcVertex;
+		myInitialPDG = myMCVertex->getParameters()[1];
 	}
 	Vertex * VertexTag::GetVertex()
 	{
@@ -19,7 +20,7 @@ namespace TTbarAnalysis
 	}
 	int VertexTag::GetInitialPDG()
 	{
-		return myMCVertex->getParameters()[1];
+		return myInitialPDG;
 	}
 	float VertexTag::GetMinimalDistance()
 	{

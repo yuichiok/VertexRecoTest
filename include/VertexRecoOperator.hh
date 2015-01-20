@@ -21,6 +21,7 @@ namespace TTbarAnalysis
 		//	Constructors
 		//
 			VertexRecoOperator ();
+			VertexRecoOperator (float angle);
 			virtual ~VertexRecoOperator () {};
 		//
 		//	Methods

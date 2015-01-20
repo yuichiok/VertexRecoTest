@@ -32,6 +32,7 @@ namespace TTbarAnalysis
 				EVENT::Vertex * myRecoVertex;
 				EVENT::Vertex * myMCVertex;
 				float myMinimalDistanceMC;
+				int myInitialPDG;
 			//
 			//	Private methods
 			//
