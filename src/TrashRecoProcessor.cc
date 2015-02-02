@@ -32,11 +32,35 @@ namespace TTbarAnalysis
 		_colMCName,
 	    	std::string("MCVertex")
 	    );
+	    registerInputCollection( LCIO::RECONSTRUCTEDPARTICLE,
+	    	"JetCollectionName",
+		"Name of the Jet collection",
+		_colJetsName,
+	    	std::string("FinalJets")
+	    );
+	    registerInputCollection( LCIO::RECONSTRUCTEDPARTICLE,
+	    	"JetRelCollectionName",
+		"Name of the Jet relation collection",
+		_colJetsRelName,
+	    	std::string("FinalJets_rel")
+	    );
 	    _angleAcceptance = 0.2;
 	    registerProcessorParameter("angleAcceptance",
 	    	"Angle cut for truth tagging verticies by direction",
 		_angleAcceptance,
 		_angleAcceptance);
+	    _handleJets = 0;
+	    registerProcessorParameter("handleJets",
+	    	"Handle jets for b-tagging",
+		_handleJets,
+		_handleJets);
+	    registerInputCollection( LCIO::MCPARTICLE,
+	    	"QuarksCollectionName",
+		"Name of the quarks collection",
+		_colquarkName,
+	    	std::string("MCbquarks")
+	    );
+
 	}
 	
 	
@@ -49,7 +73,7 @@ namespace TTbarAnalysis
 		_nEvt = 0 ;
 		_hfilename = "TrashRecoTest.root";
 		_hfile = new TFile( _hfilename.c_str(), "RECREATE", _hfilename.c_str() ) ;
-		_hTree = new TTree( "Stats1", "My vertex tree!" );
+		_hTree = new TTree( "Stats", "My vertex tree!" );
 		_hTree->Branch("numberOfTagged", &_numberOfTagged, "numberOfTagged/I");
 		_hTree->Branch("numberOfTotal", &_numberOfTotal, "numberOfTotal/I");
 		_hTree->Branch("numberOfTernary", &_numberOfTernary, "numberOfTernary/I");
@@ -57,12 +81,22 @@ namespace TTbarAnalysis
 		_hTree->Branch("numberOfUnknown", &_numberOfUnknown, "numberOfUnknown/I");
 		_hTree->Branch("bexists", &_bexists, "bexists/I");
 		_hTree->Branch("bbarexists", &_bbarexists, "bbarexists/I");
-		_hTree->Branch("bnumber1", &_bnumber1, "bnumber1/I");
-		_hTree->Branch("bbarnumber1", &_bbarnumber1, "bbarnumber1/I");
+		_hTree->Branch("bnumber", &_bnumber1, "bnumber1/I");
+		_hTree->Branch("bbarnumber", &_bbarnumber1, "bbarnumber1/I");
 		_hTree->Branch("bcharge", &_bcharge, "bcharge/I");
 		_hTree->Branch("bbarcharge", &_bbarcharge, "bbarcharge/I");
+		_hTree->Branch("bteta", &_bteta, "bteta/F");
+		_hTree->Branch("bbarteta", &_bbarteta, "bbarteta/F");
 		_hTree->Branch("bptmiss", &_bptmiss, "bptmiss/F");
 		_hTree->Branch("bbarptmiss", &_bbarptmiss, "bbarptmiss/F");
+		_hTree->Branch("bmomentum", &_bmomentum, "bmomentum/F");
+		_hTree->Branch("bbarmomentum", &_bbarmomentum, "bbarmomentum/F");
+		_hTree->Branch("bbarIPdistance", &_bbarIPdistance, "bbarIPdistance/F");
+		_hTree->Branch("bIPdistance", &_bIPdistance, "bIPdistance/F");
+		_hTree->Branch("bbarprobmean", &_bbarprobmean, "bbarprobmean/F");
+		_hTree->Branch("bprobmean", &_bprobmean, "bprobmean/F");
+		_hTree->Branch("bbarchimean", &_bbarchimean, "bbarchimean/F");
+		_hTree->Branch("bchimean", &_bchimean, "bchimean/F");
 		//_hTree->Branch("numberOfDistances", &_numberOfDistances, "numberOfDistances/I");
 		//_hTree->Branch("distances", _distances, "distances[numberOfDistances]/F");
 		_hTaggedTree = new TTree( "TaggedVertices", "My vertex tree!" );
@@ -92,6 +126,13 @@ namespace TTbarAnalysis
 		_hUntaggedTree->Branch("momentumOfParticles", _momentumOfParticles, "momentumOfParticles[numberOfUnknown][15]/F");
 		_hUntaggedTree->Branch("massOfParticles", _massOfParticles, "massOfParticles[numberOfUnknown][15]/F");
 		//_hTaggedTree->Branch("particles", _particles);
+		_hJetTree = new TTree( "Jets", "My vertex tree!" );
+		_hJetTree->Branch("numberOfJets", &_numberOfJets, "numberOfJets/I");
+		_hJetTree->Branch("numberOfVertices", _nvertices, "numberOfVertices[numberOfJets]/I");
+		_hJetTree->Branch("btags", _btags, "btags[numberOfJets]/F");
+		_hJetTree->Branch("ctags", _ctags, "ctags[numberOfJets]/F");
+		_hJetTree->Branch("mcpdg", _mcpdg, "mcpdg[numberOfJets]/I");
+		
 		
 	
 	}
@@ -139,58 +180,32 @@ namespace TTbarAnalysis
 			std::cout << "Event: " << _nEvt << '\n';
 			_nEvt ++ ;
 			VertexRecoOperator reco(_angleAcceptance);
+			if (_handleJets) 
+			{
+				try{
+					LCCollection* jets = evt->getCollection( _colJetsName );
+					LCCollection* rel = evt->getCollection( _colJetsRelName );
+					JetOperator jetOperator(0.1 , "lcfiplus");
+					//jetOperator.GetBtags(jets);
+					vector< Jet * > * btagjets = jetOperator.GetJets(jets, rel);
+					LCCollection* quarks = evt->getCollection( _colquarkName );
+					jetOperator.CompareDirection(btagjets, quarks);
+					Write(btagjets);
+					_hJetTree->Fill();
+				}
+				catch( DataNotAvailableException &e)
+				{
+					std::cout << "Jets collections are not available!\n";
+				}
+			}
 			//vector< VertexTag * > * tagged = reco.Compare(col, mc);
 			vector< VertexTag * > * tagged = reco.CompareDirection(col, mc);
 			_primary = FindPrimaryVertex( evt->getCollection( _colPriName ));
 			_numberOfTagged = tagged->size();
 			_numberOfUnknown = number - _numberOfTagged;
-			vector< ReconstructedParticle * > btracks;
-			vector< ReconstructedParticle * > bbartracks;
-			_bbarnumber1 = 0;
-			_bnumber1 = 0;
-			_bcharge = 0;
-			_bbarcharge = 0;
 			std::cout << "We have " << number << " vertices total\n";
-			for (int i = 0; i < _numberOfTagged; i++) 
-			{
-				Vertex * vertex = tagged->at(i)->GetVertex();
-				ReconstructedParticle * particle = vertex->getAssociatedParticle();
-				std::cout << "\tPDG: " << tagged->at(i)->GetInitialPDG() <<'\n';
-				PrintParticle(particle);
-				for (int j = 0; j < particle->getParticles().size(); j++) 
-				{
-					PrintParticle(particle->getParticles()[j]);
-					if (tagged->at(i)->GetInitialPDG() > 0) 
-					{
-						btracks.push_back(particle->getParticles()[j]);
-					}
-					else 
-					{
-						bbartracks.push_back(particle->getParticles()[j]);
-					}
-				}
-				Write(tagged->at(i), i);
-				int particleNumber  = particle->getParticles().size();
-				if (tagged->at(i)->GetInitialPDG()  == -5) 
-				{
-					_bbarnumber1 += particleNumber;
-					_bbarcharge += particle->getCharge();
-					std::cout << "\tbbar exists! \n";
-				}
-				if (tagged->at(i)->GetInitialPDG() == 5) 
-				{
-					_bnumber1 += particleNumber;
-					_bcharge += particle->getCharge();
-					std::cout << "\tb exists! \n";
-				}
-			}
-			_bexists = (_bnumber1 > 0)?1:0;
-			_bbarexists = (_bbarnumber1 > 0)?1:0;
-			_bptmiss = getMissingPt(btracks, tagged, 5);
-			_bbarptmiss = getMissingPt(bbartracks, tagged, -5);
+			WriteTagged(tagged);
 			_hTree->Fill();
-			std::cout << "Total b multiplicity: " << _bnumber1 << ", total bbar multiplicity: " << _bbarnumber1 << '\n';
-			std::cout << "Missing pt b : " << _bptmiss << ", Missing pt bbar: " << _bbarptmiss << '\n';
 			_hTaggedTree->Fill();
 			ClearVariables();
 			vector< Vertex * > unknown = reco.GetUnknownVertexes();
@@ -208,6 +223,117 @@ namespace TTbarAnalysis
 		catch( DataNotAvailableException &e)
 		{
 			streamlog_out(DEBUG) << "No collection!" << std::endl ;
+		}
+	}
+	void TrashRecoProcessor::WriteTagged(vector< VertexTag * > * tagged)
+	{
+		vector< ReconstructedParticle * > btracks;
+		vector< ReconstructedParticle * > bbartracks;
+		_bbarnumber1 = 0;
+		_bnumber1 = 0;
+		_bcharge = 0;
+		_bbarcharge = 0;
+		int nbvtx = 0;
+		int nbbarvtx = 0;
+		for (int i = 0; i < _numberOfTagged; i++) 
+		{
+			Vertex * vertex = tagged->at(i)->GetVertex();
+			ReconstructedParticle * particle = vertex->getAssociatedParticle();
+			std::cout << "\tPDG: " << tagged->at(i)->GetInitialPDG() <<'\n';
+			PrintParticle(particle);
+			for (int j = 0; j < particle->getParticles().size(); j++) 
+			{
+				PrintParticle(particle->getParticles()[j]);
+				if (tagged->at(i)->GetInitialPDG() > 0) 
+				{
+					btracks.push_back(particle->getParticles()[j]);
+				}
+				else 
+				{
+					bbartracks.push_back(particle->getParticles()[j]);
+				}
+			}
+			Write(tagged->at(i), i);
+			float distance = MathOperator::getDistance(tagged->at(i)->GetVertex()->getPosition(), _primary->getPosition());
+			int particleNumber  = particle->getParticles().size();
+			if (tagged->at(i)->GetInitialPDG()  == -5) 
+			{
+				nbbarvtx++;
+				_bbarchimean += tagged->at(i)->GetVertex()->getChi2();
+				_bbarprobmean += tagged->at(i)->GetVertex()->getProbability();
+				_bbarmomentum += MathOperator::getModule(particle->getMomentum());
+				_bbarnumber1 += particleNumber;
+				_bbarcharge += particle->getCharge();
+				if (_bbarIPdistance < 0.0) 
+				{
+					_bbarIPdistance = distance;
+				}
+				else 
+				{
+					_bbarIPdistance = (_bbarIPdistance > distance)? distance : _bbarIPdistance;
+				}
+				std::cout << "\tbbar exists! \n";
+			}
+			if (tagged->at(i)->GetInitialPDG() == 5) 
+			{
+				nbvtx++;
+				_bchimean += tagged->at(i)->GetVertex()->getChi2();
+				_bprobmean += tagged->at(i)->GetVertex()->getProbability();
+				_bmomentum += MathOperator::getModule(particle->getMomentum());
+				_bnumber1 += particleNumber;
+				_bcharge += particle->getCharge();
+				if (_bIPdistance < 0.0) 
+				{
+					_bIPdistance = distance;
+				}
+				else 
+				{
+					_bIPdistance = (_bIPdistance > distance)? distance : _bIPdistance;
+				}
+				std::cout << "\tb exists! \n";
+			}
+		}
+		_bbarchimean = (nbbarvtx > 0)? _bbarchimean / (float) nbbarvtx : -1.0;
+		_bbarprobmean = (nbbarvtx > 0)? _bbarprobmean / (float) nbbarvtx : -1.0;
+		_bchimean = (nbvtx > 0)? _bchimean / (float) nbvtx : -1.0;
+		_bprobmean = (nbvtx > 0)? _bprobmean / (float) nbvtx : -1.0;
+
+		_bexists = (_bnumber1 > 0)?1:0;
+		_bbarexists = (_bbarnumber1 > 0)?1:0;
+		_bptmiss = getMissingPt(btracks, tagged, 5);
+		_bbarptmiss = getMissingPt(bbartracks, tagged, -5);
+		GetBAngles(tagged);
+		std::cout << "Total b multiplicity: " << _bnumber1 << ", total bbar multiplicity: " << _bbarnumber1 << '\n';
+		std::cout << "Missing pt b : " << _bptmiss << ", Missing pt bbar: " << _bbarptmiss << '\n';
+
+	}
+
+	void TrashRecoProcessor::GetBAngles(vector< VertexTag * > * tags)
+	{
+		for (int i = 0; i < tags->size(); i++) 
+		{
+			 VertexTag * tag = tags->at(i);
+			 const double * vertex = MathOperator::toDoubleArray(tag->GetVertex()->getPosition(),3); 
+			 vector< float > direction = MathOperator::getDirection(vertex);
+			 if (tag->GetInitialPDG() > 0 && _bteta  < 0.0) 
+			 {
+			 	_bteta = MathOperator::getAngles(direction)[1];
+			 }
+			 if (tag->GetInitialPDG() < 0 && _bbarteta  < 0.0) 
+			 {
+			 	_bbarteta = MathOperator::getAngles(direction)[1];
+			 }
+		}
+	}
+	void TrashRecoProcessor::Write(vector< Jet * > * jets)
+	{
+		_numberOfJets = jets->size();
+		for (int i = 0; i < _numberOfJets; i++) 
+		{
+			_btags[i] = jets->at(i)->GetBTag();
+			_ctags[i] = jets->at(i)->GetCTag();
+			_mcpdg[i] = jets->at(i)->GetMCPDG();
+			_nvertices[i] = jets->at(i)->GetNumberOfVertices();
 		}
 	}
 	float TrashRecoProcessor::getMissingPt(vector< ReconstructedParticle * > & bdaugthers, vector< VertexTag * > * tags, int pdg)
@@ -287,6 +413,15 @@ namespace TTbarAnalysis
 	}
 	void TrashRecoProcessor::ClearVariables()
 	{
+		_bbarchimean = 0.0;
+		_bchimean = 0.0;
+		_bprobmean = 0.0;
+		_bbarprobmean = 0.0;
+		_bmomentum = 0.0;
+		_bbarmomentum = 0.0;
+		_bbarteta = -1.0;
+		_bteta = -1.0;
+		_numberOfJets = 0;
 		_numberOfTernary = 0;
 		_numberOfSecondary = 0;
 		_numberOfTagged = 0;
@@ -300,13 +435,13 @@ namespace TTbarAnalysis
 		_bptmiss = -1.0;
 		_bcharge = -5;
 		_bbarcharge = -5;
-		for (int i = 0; i < MAXV2; i++) 
-		{
-			_distances[i] = -1.0;
-		}
+		_bbarIPdistance = -1.0;
+		_bIPdistance = -1.0;
 		for (int i = 0; i < MAXV; i++) 
 		{
 			_btags[i] = -1.0;
+			_ctags[i] = -1.0;
+			_nvertices[i] = -1;
 			_probability[i] = -1.0;
 			_numberOfParticles[i] = -1;
 			_PDG[i] = 0;

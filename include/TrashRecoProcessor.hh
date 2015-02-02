@@ -14,6 +14,7 @@
 
 #include "MathOperator.hh"
 #include "VertexRecoOperator.hh"
+#include "JetOperator.hh"
 #include "VertexTag.hh"
 #include <string>
 #include <vector>
@@ -58,11 +59,14 @@ namespace TTbarAnalysis
 	  virtual void end() ;
 	  void Write(VertexTag * tag, int number);
 	  void Write(Vertex * vertex, int number);
+	  void Write(std::vector< Jet * > * jets);
 	  Vertex * FindPrimaryVertex(const LCCollection * collection); 
 	  void PrintParticle(ReconstructedParticle * particle);
+	  void WriteTagged(std::vector< VertexTag * > * tagged);
 	  float getMissingPt(std::vector< ReconstructedParticle * > & bdaugthers, std::vector< VertexTag * > * tags, int pdg);
 	  VertexTag * getBvertex(std::vector< VertexTag * > * tags, int pdg);
 	  void ClearVariables();
+	  void GetBAngles(std::vector< VertexTag * > * tags);
 	 protected:
 	
 	  /** Input collection name.
@@ -70,6 +74,9 @@ namespace TTbarAnalysis
 	  std::string _colSecName ;
 	  std::string _colPriName ;
 	  std::string _colMCName;
+	  std::string _colJetsName;
+	  std::string _colJetsRelName;
+	  std::string _colquarkName;
 	  
 	  int _nRun ;
 	  int _nEvt ;
@@ -78,8 +85,10 @@ namespace TTbarAnalysis
 	  TTree * _hTree;
 	  TTree * _hTaggedTree;
 	  TTree * _hUntaggedTree;
+	  TTree * _hJetTree;
 	  std::string _hfilename ;
 	  float _angleAcceptance;	  
+	  int _handleJets; 
 
 	  int _numberOfTagged;
 	  int _numberOfTotal;
@@ -88,19 +97,26 @@ namespace TTbarAnalysis
 	  int _numberOfUnknown;
 	  int _bnumber1;
 	  int _bbarnumber1;
+	  float _bmomentum;
+	  float _bbarmomentum;
 	  int _bexists;
 	  int _bbarexists;
 	  int _bcharge;
 	  int _bbarcharge;
-	  float _btag;
-	  float _bbartag;
 	  float _bptmiss;
 	  float _bbarptmiss;
+	  float _bbarteta;
+	  float _bteta;
+	  float _bIPdistance;
+	  float _bbarIPdistance;
+	  float _bbarchimean;
+	  float _bchimean;
+	  float _bprobmean;
+	  float _bbarprobmean;
 	  static const int MAXV2 = 36;
 	  float _distances[MAXV2];
 	  int _numberOfDistances;
 	  static const int MAXV = 15;
-	  float _btags[MAXV];
 	  float _distanceFromIP[MAXV];
 	  float _coordinates[MAXV][3];
 	  int _PDG[MAXV];
@@ -115,6 +131,13 @@ namespace TTbarAnalysis
 	  float _massOfParticles[MAXV][MAXV];
 	  //TLorentzVector * _particles[MAXV][MAXV]
 	  Vertex * _primary;
+	  
+	  int _numberOfJets;
+	  float _btags[MAXV];
+	  float _ctags[MAXV];
+	  int _mcpdg[MAXV];
+	  int _nvertices[MAXV];
+
 	
 	} ;
 		

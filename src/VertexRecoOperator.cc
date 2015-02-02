@@ -50,7 +50,7 @@ namespace TTbarAnalysis
 			{
 				Vertex * mcvertex = dynamic_cast< Vertex * >( mc->getElementAt(j) ) ;
 				passed = false;
-				float angle = MathOperator::getAngle(mcvertex->getAssociatedParticle()->getMomentum(), recovertex->getAssociatedParticle()->getMomentum());
+				float angle = MathOperator::getAngle(mcvertex->getPosition(), recovertex->getPosition());
 				std::cout << "Angle: " << angle  << '\n';
 				if (angle < myAngleCut) 
 				{

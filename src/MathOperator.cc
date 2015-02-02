@@ -127,6 +127,12 @@ namespace TTbarAnalysis
 		}
 		return acos((float)product/module1/module2);
 	}
+	float MathOperator::getAngle(const float * vector1, const float * vector2)
+	{
+		double * vector1d = toDoubleArray(vector1, 3);
+		double * vector2d = toDoubleArray(vector2, 3);
+		return getAngle(vector1d, vector2d);
+	}
 	vector< float > MathOperator::getDirection(const double * vectorPoint)
 	{
 		float module = getModule(vectorPoint);
@@ -309,11 +315,11 @@ namespace TTbarAnalysis
 	double * MathOperator::getPtOnVector(const double * momentum, const float * target)
 	{
 		double * converted = toDoubleArray(target, 3);
-		for (int i = 0; i < 3; i++) 
+		/*for (int i = 0; i < 3; i++) 
 		{
 			std::cout << i << ": " << converted[i];
 		}
-		std::cout << '\n';
+		std::cout << '\n';*/
 		vector< float > direction = getDirection(converted);
 		double pt[3];
 		double product = 0.0;
@@ -325,7 +331,7 @@ namespace TTbarAnalysis
 		{
 			pt[i] = momentum[i] - direction[i] * product;
 		}
-		std::cout << "Pl: " << product << " |Pt|: " << getModule(pt) << '\n';
+		//std::cout << "Pl: " << product << " |Pt|: " << getModule(pt) << '\n';
 		return pt;
 	}
 	double MathOperator::getMissingPt(vector< const double * > & vectors, const float * target)
