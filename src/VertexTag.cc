@@ -14,6 +14,10 @@ namespace TTbarAnalysis
 	{
 		return myRecoVertex;
 	}
+	Vertex * VertexTag::__GetMCVertex()
+	{
+		return myMCVertex;
+	}
 	int VertexTag::GetGeneration()
 	{
 		return myMCVertex->getParameters()[2];
@@ -29,6 +33,14 @@ namespace TTbarAnalysis
 	void VertexTag::SetMinimalDistance(float d)
 	{
 		myMinimalDistanceMC = d;
+	}
+	int VertexTag::__GetMCTrackNumber()
+	{
+		return myMCVertex->getAssociatedParticle()->getParticles().size();
+	}
+	int VertexTag::GetTrackNumber()
+	{
+		return myRecoVertex->getAssociatedParticle()->getParticles().size();
 	}
 
 

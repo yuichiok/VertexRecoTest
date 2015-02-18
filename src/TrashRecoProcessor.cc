@@ -1,6 +1,7 @@
 #include "TrashRecoProcessor.hh"
 using std::vector;
 using EVENT::Vertex;
+using IMPL::VertexImpl;
 using TTbarAnalysis::MathOperator;
 
 namespace TTbarAnalysis 
@@ -25,6 +26,18 @@ namespace TTbarAnalysis
 	            _colPriName ,
 	            std::string("PrimaryVertex")
 	
+	    );
+	    registerOutputCollection( LCIO::RECONSTRUCTEDPARTICLE,
+        	    "OutputMissedName" , 
+	            "Name of the missed collection"  ,
+        	    _colMissName ,
+           	 std::string("MissedParticles")
+	    );
+	    registerOutputCollection( LCIO::VERTEX,
+        	    "OutputTaggedName" , 
+	            "Name of the output vertex collection"  ,
+        	    _colTagName ,
+           	 std::string("TaggedVertices")
 	    );
 	    registerInputCollection( LCIO::VERTEX,
 	    	"MCVertexCollectionName",
@@ -133,6 +146,11 @@ namespace TTbarAnalysis
 		_hJetTree->Branch("ctags", _ctags, "ctags[numberOfJets]/F");
 		_hJetTree->Branch("mcpdg", _mcpdg, "mcpdg[numberOfJets]/I");
 		
+		_hMissedTree = new TTree( "MissedTracks", "My vertex tree!" );
+		_hMissedTree->Branch("numberOfMissed", &_numberOfMissed, "numberOfMissed/I");
+		_hMissedTree->Branch("offsetMissed", _offsetMissed, "offsetMissed[numberOfMissed]/F");
+		_hMissedTree->Branch("momentumMissed", _momentumMissed, "momentumMissed[numberOfMissed]/F");
+		_hMissedTree->Branch("thetaMissed", _thetaMissed, "thetaMissed[numberOfMissed]/F");
 		
 	
 	}
@@ -177,9 +195,10 @@ namespace TTbarAnalysis
 			LCCollection* mc = evt->getCollection( _colMCName );
 			int number = col->getNumberOfElements();
 			_numberOfTotal = number;
-			std::cout << "Event: " << _nEvt << '\n';
+			//std::cout << "Event: " << _nEvt << '\n';
 			_nEvt ++ ;
-			VertexRecoOperator reco(_angleAcceptance);
+			_primary = FindPrimaryVertex( evt->getCollection( _colPriName ));
+			VertexRecoOperator reco(_angleAcceptance, _primary);
 			if (_handleJets) 
 			{
 				try{
@@ -200,16 +219,28 @@ namespace TTbarAnalysis
 			}
 			//vector< VertexTag * > * tagged = reco.Compare(col, mc);
 			vector< VertexTag * > * tagged = reco.CompareDirection(col, mc);
-			_primary = FindPrimaryVertex( evt->getCollection( _colPriName ));
+			vector< ReconstructedParticle * > * recomissed = new vector< ReconstructedParticle * >();
+			vector< Particle > * missed = reco.CompareTracks(col, mc, recomissed);
+			int reconot = 0;
+			int mcnot = 0;
+			int missednot = missed->size();
+			for (int i = 0; i < tagged->size(); i++) 
+			{
+				reconot += tagged->at(i)->GetTrackNumber();
+				mcnot += tagged->at(i)->__GetMCTrackNumber();
+			}
 			_numberOfTagged = tagged->size();
 			_numberOfUnknown = number - _numberOfTagged;
 			std::cout << "We have " << number << " vertices total\n";
 			WriteTagged(tagged);
+			WriteTaggedCollection(evt, tagged);
+			Write(evt, missed, recomissed);
+			_hMissedTree->Fill();
 			_hTree->Fill();
 			_hTaggedTree->Fill();
 			ClearVariables();
 			vector< Vertex * > unknown = reco.GetUnknownVertexes();
-			for (int i = 0; i < unknown.size(); i++) 
+			for (unsigned int i = 0; i < unknown.size(); i++) 
 			{
 				Write(unknown[i],i);
 			}
@@ -224,6 +255,24 @@ namespace TTbarAnalysis
 		{
 			streamlog_out(DEBUG) << "No collection!" << std::endl ;
 		}
+	}
+	void  TrashRecoProcessor::Write(LCEvent * evt, std::vector< Particle > * missed,  vector< ReconstructedParticle * > * recomissed)
+	{
+		IMPL::LCCollectionVec * reco = new IMPL::LCCollectionVec ( LCIO::RECONSTRUCTEDPARTICLE);
+		
+		_numberOfMissed = missed->size();
+		for (unsigned int i = 0; i < missed->size(); i++) 
+		{
+			if (recomissed) 
+			{
+				reco->addElement(new ReconstructedParticleImpl((ReconstructedParticleImpl&)(*recomissed->at(i))));
+
+			}
+			_momentumMissed[i] = MathOperator::getModule(missed->at(i).GetMomentum());
+			_offsetMissed[i] = missed->at(i).GetOffset();
+			_thetaMissed[i] = missed->at(i).GetTheta();
+		}
+		evt->addCollection(reco, _colMissName);
 	}
 	void TrashRecoProcessor::WriteTagged(vector< VertexTag * > * tagged)
 	{
@@ -241,7 +290,7 @@ namespace TTbarAnalysis
 			ReconstructedParticle * particle = vertex->getAssociatedParticle();
 			std::cout << "\tPDG: " << tagged->at(i)->GetInitialPDG() <<'\n';
 			PrintParticle(particle);
-			for (int j = 0; j < particle->getParticles().size(); j++) 
+			for (unsigned int j = 0; j < particle->getParticles().size(); j++) 
 			{
 				PrintParticle(particle->getParticles()[j]);
 				if (tagged->at(i)->GetInitialPDG() > 0) 
@@ -272,7 +321,6 @@ namespace TTbarAnalysis
 				{
 					_bbarIPdistance = (_bbarIPdistance > distance)? distance : _bbarIPdistance;
 				}
-				std::cout << "\tbbar exists! \n";
 			}
 			if (tagged->at(i)->GetInitialPDG() == 5) 
 			{
@@ -290,7 +338,6 @@ namespace TTbarAnalysis
 				{
 					_bIPdistance = (_bIPdistance > distance)? distance : _bIPdistance;
 				}
-				std::cout << "\tb exists! \n";
 			}
 		}
 		_bbarchimean = (nbbarvtx > 0)? _bbarchimean / (float) nbbarvtx : -1.0;
@@ -308,9 +355,21 @@ namespace TTbarAnalysis
 
 	}
 
+	void TrashRecoProcessor::WriteTaggedCollection(LCEvent * evt, vector< VertexTag * > * tags)
+	{
+		IMPL::LCCollectionVec * reco = new IMPL::LCCollectionVec ( LCIO::VERTEX);
+		for (int i = 0; i < tags->size(); i++) 
+		{
+			Vertex * vertex = tags->at(i)->GetVertex();
+			reco->addElement(new VertexImpl((VertexImpl&)(*vertex)));
+
+		}
+		evt->addCollection(reco, _colTagName);
+	}
+
 	void TrashRecoProcessor::GetBAngles(vector< VertexTag * > * tags)
 	{
-		for (int i = 0; i < tags->size(); i++) 
+		for (unsigned int i = 0; i < tags->size(); i++) 
 		{
 			 VertexTag * tag = tags->at(i);
 			 const double * vertex = MathOperator::toDoubleArray(tag->GetVertex()->getPosition(),3); 
@@ -345,7 +404,7 @@ namespace TTbarAnalysis
 		VertexTag * bvertex = getBvertex(tags, pdg);
 		const float * position = bvertex->GetVertex()->getPosition();
 		vector< const double * > vectors;
-		for (int i = 0; i < bdaugthers.size(); i++) 
+		for (unsigned int i = 0; i < bdaugthers.size(); i++) 
 		{
 			vectors.push_back(bdaugthers[i]->getMomentum());
 		}
@@ -360,7 +419,7 @@ namespace TTbarAnalysis
 		}
 		float min = 1000.0;
 		int number = -1;
-		for (int i = 0; i < tags->size(); i++) 
+		for (unsigned int i = 0; i < tags->size(); i++) 
 		{
 			double * pos = MathOperator::toDoubleArray(tags->at(i)->GetVertex()->getPosition() , 3);
 			float module = MathOperator::getModule(pos);
@@ -421,6 +480,7 @@ namespace TTbarAnalysis
 		_bbarmomentum = 0.0;
 		_bbarteta = -1.0;
 		_bteta = -1.0;
+		_numberOfMissed = 0;
 		_numberOfJets = 0;
 		_numberOfTernary = 0;
 		_numberOfSecondary = 0;
@@ -439,6 +499,9 @@ namespace TTbarAnalysis
 		_bIPdistance = -1.0;
 		for (int i = 0; i < MAXV; i++) 
 		{
+			_offsetMissed[i] = -1.0;
+			_thetaMissed[i] = -1.0;
+			_momentumMissed[i] = -1.0;
 			_btags[i] = -1.0;
 			_ctags[i] = -1.0;
 			_nvertices[i] = -1;

@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <iomanip>
 #include <EVENT/LCCollection.h>
+#include <IMPL/LCCollectionVec.h>
 #include <EVENT/Vertex.h>
+#include <IMPL/VertexImpl.h>
 #include <EVENT/ReconstructedParticle.h>
 
 // ----- include for verbosity dependend logging ---------
@@ -63,9 +65,11 @@ namespace TTbarAnalysis
 	  Vertex * FindPrimaryVertex(const LCCollection * collection); 
 	  void PrintParticle(ReconstructedParticle * particle);
 	  void WriteTagged(std::vector< VertexTag * > * tagged);
+	  void WriteTaggedCollection(LCEvent * evt, std::vector< VertexTag * > * tags);
 	  float getMissingPt(std::vector< ReconstructedParticle * > & bdaugthers, std::vector< VertexTag * > * tags, int pdg);
 	  VertexTag * getBvertex(std::vector< VertexTag * > * tags, int pdg);
 	  void ClearVariables();
+	  void Write(LCEvent * evt, std::vector< Particle > * missed, std::vector< ReconstructedParticle * > * m = NULL);
 	  void GetBAngles(std::vector< VertexTag * > * tags);
 	 protected:
 	
@@ -77,7 +81,8 @@ namespace TTbarAnalysis
 	  std::string _colJetsName;
 	  std::string _colJetsRelName;
 	  std::string _colquarkName;
-	  
+	  std::string _colMissName;
+	  std::string _colTagName;
 	  int _nRun ;
 	  int _nEvt ;
 	
@@ -86,6 +91,7 @@ namespace TTbarAnalysis
 	  TTree * _hTaggedTree;
 	  TTree * _hUntaggedTree;
 	  TTree * _hJetTree;
+	  TTree * _hMissedTree;
 	  std::string _hfilename ;
 	  float _angleAcceptance;	  
 	  int _handleJets; 
@@ -138,6 +144,10 @@ namespace TTbarAnalysis
 	  int _mcpdg[MAXV];
 	  int _nvertices[MAXV];
 
+	  int _numberOfMissed;
+	  float _offsetMissed[MAXV];
+	  float _momentumMissed[MAXV];
+	  float _thetaMissed[MAXV];
 	
 	} ;
 		

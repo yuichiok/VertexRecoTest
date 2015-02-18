@@ -76,6 +76,15 @@ namespace TTbarAnalysis
 		}
 		return sqrt(module);
 	}
+	float MathOperator::getModule(const float * vector1)
+	{
+		float module = 0.0;
+		for (int i = 0; i < 3; i++) 
+		{
+			module += vector1[i]*vector1[i];
+		}
+		return sqrt(module);
+	}
 	vector< float > MathOperator::getAngles(vector< float > & direction)
 	{
 		vector< float > result;
@@ -112,12 +121,46 @@ namespace TTbarAnalysis
 		result.push_back(teta);
 		return result;
 	}
+	float MathOperator::getAngleBtw(const double * vector1, const double * vector2)
+	{
+		vector< float > direction1 = getDirection(vector1);
+		vector< float > direction2 = getDirection(vector2);
+		float product = 0.0;
+		for (int i = 0; i < 3; i++) 
+		{
+			product += direction1[i]*direction2[i];
+		}
+		float result = acos(product);
+		if (isnan(result)) 
+		{
+			if (product > 0.999) 
+			{
+				return 0.0;
+			}
+			std::cout << "DNGER: " << product << "\n";
+		}
+		return result;
+	}
 	float MathOperator::getAngle(const double * vector1, const double * vector2)
 	{
-		float module1 = getModule(vector1);
+		vector< float > direction1 = getDirection(vector1);
+		vector< float > direction2 = getDirection(vector2);
+		float product = 0.0;
+		std::cout << "DNGER: " << product << "\n";
+		for (int i = 0; i < 3; i++) 
+		{
+			product += direction1[i]*direction2[i];
+		}
+		float result = acos(product);
+		if (isnan(result)) 
+		{
+		}
+		return result;
+		/*float module1 = getModule(vector1);
 		float module2 = getModule(vector2);
 		if (module1 < 0.00000000001 || module2 < 0.000000000001) 
 		{	
+			std::cout << "FATAL: Small module!!!!!\n";
 			return 10e10;
 		}
 		double product = 0.0;
@@ -125,7 +168,8 @@ namespace TTbarAnalysis
 		{
 			product += vector1[i]*vector2[i];
 		}
-		return acos((float)product/module1/module2);
+		float angle = (float)product/module1/module2;
+		return acos(angle);*/
 	}
 	float MathOperator::getAngle(const float * vector1, const float * vector2)
 	{

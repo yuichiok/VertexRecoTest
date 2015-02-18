@@ -125,7 +125,7 @@ namespace TTbarAnalysis
 				{
 					ReconstructedParticle * leader = components->at(k);
 					float angle = MathOperator::getAngle(mcparticle->getMomentum(), leader->getMomentum());
-					std::cout << "Jet angle: " << angle << " particle " << mcparticle->getPDG() << '\n';
+					//std::cout << "Jet angle: " << angle << " particle " << mcparticle->getPDG() << '\n';
 					if (angle < myAngle) 
 					{
 						int pdg = mcparticle->getPDG();
