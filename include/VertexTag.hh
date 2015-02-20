@@ -29,6 +29,8 @@ namespace TTbarAnalysis
 				void SetMinimalDistance(float d);
 				int __GetMCTrackNumber();
 				int GetTrackNumber();
+				float GetTruthAngle();
+				void SetTruthAngle(float theta);
 			private:
 			//
 			//	Data
@@ -37,6 +39,7 @@ namespace TTbarAnalysis
 				EVENT::Vertex * myMCVertex;
 				float myMinimalDistanceMC;
 				int myInitialPDG;
+				float myTruthAngle;
 			//
 			//	Private methods
 			//

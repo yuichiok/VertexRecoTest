@@ -116,6 +116,7 @@ namespace TTbarAnalysis
 		_hTaggedTree->Branch("numberOfTagged", &_numberOfTagged, "numberOfTagged/I");
 		_hTaggedTree->Branch("distance", _distanceFromIP, "distance[numberOfTagged]/F");
 		_hTaggedTree->Branch("mindistance", _mindistance, "mindistance[numberOfTagged]/F");
+		_hTaggedTree->Branch("angle", _angle, "angle[numberOfTagged]/F");
 		_hTaggedTree->Branch("probability", _probability, "probability[numberOfTagged]/F");
 		_hTaggedTree->Branch("chi2", _chi2, "chi2[numberOfTagged]/F");
 		_hTaggedTree->Branch("coordinates", _coordinates, "coordinates[numberOfTagged][3]/F");
@@ -465,6 +466,7 @@ namespace TTbarAnalysis
 		_numberOfTernary += (tag->GetGeneration() == 3)? 1 : 0;
 		_numberOfSecondary += (tag->GetGeneration() == 2)? 1 : 0;
 		_PDG[number] = tag->GetInitialPDG();
+		_angle[number] = tag->GetTruthAngle();
 		_generation[number] = tag->GetGeneration();
 		_mindistance[number] = tag->GetMinimalDistance();
 		Vertex * vertex = tag->GetVertex();
@@ -508,6 +510,7 @@ namespace TTbarAnalysis
 			_probability[i] = -1.0;
 			_numberOfParticles[i] = -1;
 			_PDG[i] = 0;
+			_angle[i] = 0.0;
 			_generation[i] = 0;
 			_chi2[i] = -1.0;
 			_distanceFromIP[i] = -1.0;

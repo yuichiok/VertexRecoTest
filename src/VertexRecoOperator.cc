@@ -63,7 +63,9 @@ namespace TTbarAnalysis
 				{
 					std::cout << "Vertex tagged with pdg " << mcvertex->getParameters()[1] << " n-tracks: " << recovertex->getAssociatedParticle()->getParticles().size() << '\n';
 					passed = true;
-					result->push_back(new VertexTag(recovertex, mcvertex));
+					VertexTag * vtag = new VertexTag(recovertex, mcvertex);
+					vtag->SetTruthAngle(angle);
+					result->push_back(vtag);
 					break;
 				}
 			}

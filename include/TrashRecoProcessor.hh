@@ -127,6 +127,7 @@ namespace TTbarAnalysis
 	  float _coordinates[MAXV][3];
 	  int _PDG[MAXV];
 	  float _probability[MAXV];
+	  float _angle[MAXV];
 	  int _charge[MAXV];
 	  float _mindistance[MAXV];
 	  float _chi2[MAXV];

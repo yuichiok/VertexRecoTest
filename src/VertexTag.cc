@@ -34,6 +34,15 @@ namespace TTbarAnalysis
 	{
 		myMinimalDistanceMC = d;
 	}
+	
+	float VertexTag::GetTruthAngle()
+	{
+		return myTruthAngle;
+	}
+	void VertexTag::SetTruthAngle(float theta)
+	{
+		myTruthAngle = theta;
+	}
 	int VertexTag::__GetMCTrackNumber()
 	{
 		return myMCVertex->getAssociatedParticle()->getParticles().size();
