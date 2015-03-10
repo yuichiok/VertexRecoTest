@@ -127,6 +127,8 @@ namespace TTbarAnalysis
 		_hTaggedTree->Branch("energyOfParticles", _energyOfParticles, "energyOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("momentumOfParticles", _momentumOfParticles, "momentumOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("massOfParticles", _massOfParticles, "massOfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("costhetaOfParticles", _costhetaOfParticles, "costhetaOfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("thetaOfParticles", _thetaOfParticles, "thetaOfParticles[numberOfTagged][15]/F");
 		
 		_hUntaggedTree = new TTree( "UntaggedVertices", "My vertex tree!" );
 		_hUntaggedTree->Branch("numberOfUnknown", &_numberOfUnknown, "numberOfUnknown/I");
@@ -152,6 +154,7 @@ namespace TTbarAnalysis
 		_hMissedTree->Branch("offsetMissed", _offsetMissed, "offsetMissed[numberOfMissed]/F");
 		_hMissedTree->Branch("momentumMissed", _momentumMissed, "momentumMissed[numberOfMissed]/F");
 		_hMissedTree->Branch("thetaMissed", _thetaMissed, "thetaMissed[numberOfMissed]/F");
+		_hMissedTree->Branch("costhetaMissed", _costhetaMissed, "costhetaMissed[numberOfMissed]/F");
 		
 	
 	}
@@ -272,6 +275,7 @@ namespace TTbarAnalysis
 			_momentumMissed[i] = MathOperator::getModule(missed->at(i).GetMomentum());
 			_offsetMissed[i] = missed->at(i).GetOffset();
 			_thetaMissed[i] = missed->at(i).GetTheta();
+			_costhetaMissed[i] = std::cos(missed->at(i).GetTheta());
 		}
 		evt->addCollection(reco, _colMissName);
 	}
@@ -448,7 +452,11 @@ namespace TTbarAnalysis
 		for (int j = 0; j < _numberOfParticles[number]; j++)
 		{
 			ReconstructedParticle * component = particle->getParticles()[j];
+			vector<float> direction = MathOperator::getDirection(component->getMomentum());
 			_momentumOfParticles[number][j] = MathOperator::getModule( component->getMomentum());
+			_thetaOfParticles[number][j] = MathOperator::getAngles( direction )[1];
+			_costhetaOfParticles[number][j] = std::cos(_thetaOfParticles[number][j]);
+
 			_energyOfParticles[number][j] = component->getEnergy();
 			_massOfParticles[number][j] = component->getMass();
 		}
@@ -503,6 +511,7 @@ namespace TTbarAnalysis
 		{
 			_offsetMissed[i] = -1.0;
 			_thetaMissed[i] = -1.0;
+			_costhetaMissed[i] = -1.0;
 			_momentumMissed[i] = -1.0;
 			_btags[i] = -1.0;
 			_ctags[i] = -1.0;
@@ -516,6 +525,7 @@ namespace TTbarAnalysis
 			_distanceFromIP[i] = -1.0;
 			for (int j = 0; j < MAXV; j++) 
 			{
+				_costhetaOfParticles[i][j] = -2.0;
 				_energyOfParticles[i][j] = -1.0;
 				_momentumOfParticles[i][j] = -1.0;
 				_massOfParticles[i][j] = -1.0;

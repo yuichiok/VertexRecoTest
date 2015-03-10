@@ -135,6 +135,8 @@ namespace TTbarAnalysis
 	  int _numberOfParticles[MAXV];
 	  float _energyOfParticles[MAXV][MAXV];
 	  float _momentumOfParticles[MAXV][MAXV];
+	  float _thetaOfParticles[MAXV][MAXV];
+	  float _costhetaOfParticles[MAXV][MAXV];
 	  float _massOfParticles[MAXV][MAXV];
 	  //TLorentzVector * _particles[MAXV][MAXV]
 	  Vertex * _primary;
@@ -149,6 +151,7 @@ namespace TTbarAnalysis
 	  float _offsetMissed[MAXV];
 	  float _momentumMissed[MAXV];
 	  float _thetaMissed[MAXV];
+	  float _costhetaMissed[MAXV];
 	
 	} ;
 		
