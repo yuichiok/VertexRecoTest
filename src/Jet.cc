@@ -12,6 +12,38 @@ namespace TTbarAnalysis
 		myMomentum = momentum;
 		myMCPDG = 0;
 		myParticles = NULL;
+		myRecoVertices = NULL;
+	}
+	Jet::Jet ()
+	{
+		myRecoVertices = NULL;
+		myMCPDG = 0;
+		myParticles = NULL;
+		
+	}
+	void Jet::SetRecoVertices(std::vector<  EVENT::Vertex * > * vertices)
+	{
+		myRecoVertices = vertices;
+	}
+	std::vector<  EVENT::Vertex * > * Jet::GetRecoVertices()
+	{
+		return myRecoVertices;
+	}
+	void Jet::AddVertexTag(VertexTag * tag)
+	{
+		myVertexTags.push_back(tag);
+	}
+	const vector< VertexTag * > & Jet::GetVertexTags() const
+	{
+		return myVertexTags;
+	}
+	void Jet::SetBTag(float value)
+	{
+		myBTag = value;
+	}
+	void Jet::SetCTag(float value)
+	{
+		myCTag = value;
 	}
 	float Jet::GetBTag()
 	{
@@ -23,7 +55,50 @@ namespace TTbarAnalysis
 	}
 	int Jet::GetNumberOfVertices()
 	{
+		if (myRecoVertices) 
+		{
+			return myRecoVertices->size();
+		}
 		return myNumber;
+	}
+	int Jet::GetNumberOfVertexParticles()
+	{
+		int sum = -1;
+		if (myRecoVertices) 
+		{
+			sum = 0;
+			for (unsigned int i = 0; i < myRecoVertices->size(); i++) 
+			{
+				sum += myRecoVertices->at(i)->getAssociatedParticle()->getParticles().size();
+			}
+		}
+		return sum;
+	}
+	float Jet::GetHadronCharge()
+	{
+		float charge = -5.0;
+		if (myRecoVertices) 
+		{
+			charge = 0.0;
+			for (unsigned int i = 0; i < myRecoVertices->size(); i++) 
+			{
+				charge += myRecoVertices->at(i)->getAssociatedParticle()->getCharge();
+			}
+		}
+		return charge;
+	}
+	float Jet::GetHadronMomentum()
+	{
+		float momentum = -1.0;
+		if (myRecoVertices) 
+		{
+			momentum = 0.0;
+			for (unsigned int i = 0; i < myRecoVertices->size(); i++)
+			{
+				momentum += MathOperator::getModule(myRecoVertices->at(i)->getAssociatedParticle()->getMomentum()); // CRUNCH!!!
+			}
+		}
+		return momentum;
 	}
 	const double * Jet::GetMomentum()
 	{

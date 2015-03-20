@@ -9,6 +9,31 @@ namespace TTbarAnalysis
 		myRecoVertex = recoVertex;
 		myMCVertex = mcVertex;
 		myInitialPDG = myMCVertex->getParameters()[1];
+		myStatus = UNKNOWN_TAG;
+	}
+	VertexTag:: VertexTag(Vertex * mcVertex)
+	{
+		myRecoVertex = NULL;
+		myMCVertex = mcVertex;
+		myStatus = UNKNOWN_TAG;
+	}
+	VertexTag:: VertexTag()
+	{
+		myRecoVertex = NULL;
+		myMCVertex = NULL;
+		myStatus = UNKNOWN_TAG;
+	}
+	void VertexTag::SetRecoVertex(EVENT::Vertex * vertex)
+	{
+		myRecoVertex = vertex;
+	}
+	void VertexTag::SetStatus(TagStatus status)
+	{
+		myStatus = status;
+	}
+	TagStatus VertexTag::GetStatus()
+	{
+		return myStatus;
 	}
 	Vertex * VertexTag::GetVertex()
 	{

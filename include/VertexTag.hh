@@ -6,6 +6,13 @@
 #define _VertexTag_hh
 namespace TTbarAnalysis
 {
+		enum TagStatus
+		{
+			UNKNOWN_TAG,
+			EMPTY_TAG,
+			MERGED_TAG,
+			PRECISE_TAG
+		};
 		class VertexTag 
 		{
 			public:
@@ -17,12 +24,17 @@ namespace TTbarAnalysis
 			//	Constructors
 			//
 				VertexTag (EVENT::Vertex * recoVertex, EVENT::Vertex * mcVertex);
+				VertexTag();
+				VertexTag(EVENT::Vertex * mcVertex);
 				virtual ~VertexTag () {};
 			//
 			//	Methods
 			//
 				EVENT::Vertex * GetVertex();
 				EVENT::Vertex * __GetMCVertex();
+				void SetStatus(TagStatus status);
+				TagStatus GetStatus();
+				void SetRecoVertex(EVENT::Vertex * vertex);
 				int GetGeneration();
 				int GetInitialPDG();
 				float GetMinimalDistance();
@@ -37,6 +49,7 @@ namespace TTbarAnalysis
 			//
 				EVENT::Vertex * myRecoVertex;
 				EVENT::Vertex * myMCVertex;
+				TagStatus myStatus;
 				float myMinimalDistanceMC;
 				int myInitialPDG;
 				float myTruthAngle;

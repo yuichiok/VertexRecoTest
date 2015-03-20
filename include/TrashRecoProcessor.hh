@@ -8,6 +8,8 @@
 #include <EVENT/Vertex.h>
 #include <IMPL/VertexImpl.h>
 #include <EVENT/ReconstructedParticle.h>
+#include <EVENT/MCParticle.h>
+#include <UTIL/LCRelationNavigator.h>
 
 // ----- include for verbosity dependend logging ---------
 #include "marlin/VerbosityLevels.h"
@@ -17,6 +19,7 @@
 #include "MathOperator.hh"
 #include "VertexRecoOperator.hh"
 #include "JetOperator.hh"
+#include "JetVertexOperator.hh"
 #include "VertexTag.hh"
 #include <string>
 #include <vector>
@@ -64,11 +67,14 @@ namespace TTbarAnalysis
 	  void Write(std::vector< Jet * > * jets);
 	  Vertex * FindPrimaryVertex(const LCCollection * collection); 
 	  void PrintParticle(ReconstructedParticle * particle);
+	  void WriteTagged(std::vector< Jet * > * jets);
+	  void WriteVertex(const std::vector< VertexTag * > & tags);
 	  void WriteTagged(std::vector< VertexTag * > * tagged);
 	  void WriteTaggedCollection(LCEvent * evt, std::vector< VertexTag * > * tags);
 	  float getMissingPt(std::vector< ReconstructedParticle * > & bdaugthers, std::vector< VertexTag * > * tags, int pdg);
 	  VertexTag * getBvertex(std::vector< VertexTag * > * tags, int pdg);
 	  void ClearVariables();
+	  void AnalyseSecondaries(const LCCollection * prongs,const LCCollection * rel, const LCCollection * reco);
 	  void Write(LCEvent * evt, std::vector< Particle > * missed, std::vector< ReconstructedParticle * > * m = NULL);
 	  void GetBAngles(std::vector< VertexTag * > * tags);
 	 protected:
@@ -78,10 +84,13 @@ namespace TTbarAnalysis
 	  std::string _colSecName ;
 	  std::string _colPriName ;
 	  std::string _colMCName;
+	  std::string _colProngsName;
+	  std::string _colRelName;
 	  std::string _colJetsName;
 	  std::string _colJetsRelName;
 	  std::string _colquarkName;
 	  std::string _colMissName;
+	  std::string _colMissVtxName;
 	  std::string _colTagName;
 	  int _nRun ;
 	  int _nEvt ;
@@ -89,9 +98,11 @@ namespace TTbarAnalysis
 	  TFile * _hfile;
 	  TTree * _hTree;
 	  TTree * _hTaggedTree;
+	  TTree * _hSecTree;
 	  TTree * _hUntaggedTree;
 	  TTree * _hJetTree;
 	  TTree * _hMissedTree;
+	  TTree * _hMissedVertexTree;
 	  std::string _hfilename ;
 	  float _angleAcceptance;	  
 	  int _handleJets; 
@@ -153,6 +164,17 @@ namespace TTbarAnalysis
 	  float _thetaMissed[MAXV];
 	  float _costhetaMissed[MAXV];
 	
+	  int _numberOfMissedVtx;
+	  float _costhetaMissedVtx[MAXV];
+	  float _momentumMissedVtx[MAXV];
+	  float _distanceMissedVtx[MAXV];
+	  int _numberOfTracksMissedVtx[MAXV];
+
+	  int _numberOfSecondaries;
+	  int _misrecoNumber;
+	  int _primaryNumber;
+	  int _wovertexNumber;
+	  int _correctNumber;
 	} ;
 		
 } /* TTbarAnalysis */
