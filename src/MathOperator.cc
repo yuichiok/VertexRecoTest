@@ -137,7 +137,7 @@ namespace TTbarAnalysis
 			{
 				return 0.0;
 			}
-			std::cout << "DNGER: " << product << "\n";
+			//std::cout << "DNGER: " << product << "\n";
 		}
 		return result;
 	}
@@ -146,7 +146,7 @@ namespace TTbarAnalysis
 		vector< float > direction1 = getDirection(vector1);
 		vector< float > direction2 = getDirection(vector2);
 		float product = 0.0;
-		std::cout << "DNGER: " << product << "\n";
+		//std::cout << "DNGER: " << product << "\n";
 		for (int i = 0; i < 3; i++) 
 		{
 			product += direction1[i]*direction2[i];

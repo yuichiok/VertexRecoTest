@@ -28,11 +28,13 @@ namespace TTbarAnalysis
 		//
 			double * GetMomentum();
 			void SetMomentum(const double * momentum);
+			void SetMass(float momentum);
 			EVENT::Vertex * GetVertex();
 			void SetVertex(EVENT::Vertex * vertex);
 			float GetOffset();
 			void SetOffset(float offset);
 			float GetTheta();
+			float GetMass();
 			void SetTheta(float offset);
 			void Assign(EVENT::ReconstructedParticle * initial);
 		private:
@@ -43,6 +45,7 @@ namespace TTbarAnalysis
 			EVENT::Vertex * myVertex;
 			float myOffset;
 			float myTheta;
+			float myMass;
 		//
 		//	Private methods
 		//

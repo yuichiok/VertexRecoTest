@@ -49,7 +49,7 @@ namespace TTbarAnalysis
 	}
 	int VertexTag::GetInitialPDG()
 	{
-		return myInitialPDG;
+		return myMCVertex->getParameters()[1];
 	}
 	float VertexTag::GetMinimalDistance()
 	{

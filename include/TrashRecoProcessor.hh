@@ -64,11 +64,12 @@ namespace TTbarAnalysis
 	  virtual void end() ;
 	  void Write(VertexTag * tag, int number);
 	  void Write(Vertex * vertex, int number);
+	  void WriteMissed(Vertex * vertex, LCCollection * collection);
 	  void Write(std::vector< Jet * > * jets);
 	  Vertex * FindPrimaryVertex(const LCCollection * collection); 
 	  void PrintParticle(ReconstructedParticle * particle);
-	  void WriteTagged(std::vector< Jet * > * jets);
-	  void WriteVertex(const std::vector< VertexTag * > & tags);
+	  LCCollection * WriteTagged(std::vector< Jet * > * jets);
+	  void WriteVertex(const std::vector< VertexTag * > & tags, LCCollectionVec * reco);
 	  void WriteTagged(std::vector< VertexTag * > * tagged);
 	  void WriteTaggedCollection(LCEvent * evt, std::vector< VertexTag * > * tags);
 	  float getMissingPt(std::vector< ReconstructedParticle * > & bdaugthers, std::vector< VertexTag * > * tags, int pdg);
@@ -89,9 +90,12 @@ namespace TTbarAnalysis
 	  std::string _colJetsName;
 	  std::string _colJetsRelName;
 	  std::string _colquarkName;
+	  std::string _colMCMissName;
 	  std::string _colMissName;
 	  std::string _colMissVtxName;
 	  std::string _colTagName;
+	  std::string _colRecoProngsName;
+	  std::string _colRecoProngsTracksName;
 	  int _nRun ;
 	  int _nEvt ;
 	
@@ -114,6 +118,8 @@ namespace TTbarAnalysis
 	  int _numberOfUnknown;
 	  int _bnumber1;
 	  int _bbarnumber1;
+	  float _btag;
+	  float _bbartag;
 	  float _bmomentum;
 	  float _bbarmomentum;
 	  int _bexists;
@@ -133,8 +139,11 @@ namespace TTbarAnalysis
 	  static const int MAXV2 = 36;
 	  float _distances[MAXV2];
 	  int _numberOfDistances;
-	  static const int MAXV = 15;
+	  static const int MAXV = 20;
 	  float _distanceFromIP[MAXV];
+	  float _precision[MAXV];
+	  float _precisionT[MAXV];
+	  float _distanceIP[MAXV];
 	  float _coordinates[MAXV][3];
 	  int _PDG[MAXV];
 	  float _probability[MAXV];
@@ -160,7 +169,9 @@ namespace TTbarAnalysis
 
 	  int _numberOfMissed;
 	  float _offsetMissed[MAXV];
+	  int _interactionMissed[MAXV];
 	  float _momentumMissed[MAXV];
+	  float _massMissed[MAXV];
 	  float _thetaMissed[MAXV];
 	  float _costhetaMissed[MAXV];
 	
@@ -169,6 +180,9 @@ namespace TTbarAnalysis
 	  float _momentumMissedVtx[MAXV];
 	  float _distanceMissedVtx[MAXV];
 	  int _numberOfTracksMissedVtx[MAXV];
+	  float _momentumOfParticlesVtx[MAXV][MAXV];
+	  float _costhetaOfParticlesVtx[MAXV][MAXV];
+	  float _offsetOfParticlesVtx[MAXV][MAXV];
 
 	  int _numberOfSecondaries;
 	  int _misrecoNumber;

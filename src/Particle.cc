@@ -9,6 +9,7 @@ namespace TTbarAnalysis
 	{
 		myMomentum = NULL;
 		myVertex = NULL;
+		myMass = 0.0;
 	}
 	double * Particle::GetMomentum()
 	{
@@ -42,9 +43,17 @@ namespace TTbarAnalysis
 	{
 		return myTheta;
 	}
+	float Particle::GetMass()
+	{
+		return myMass;
+	}
 	void Particle::SetTheta(float theta)
 	{
 		myTheta = theta;
+	}
+	void Particle::SetMass(float mass)
+	{
+		myMass = mass;
 	}
 	
 	void Particle::Assign(ReconstructedParticle * initial)
