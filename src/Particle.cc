@@ -3,6 +3,7 @@ using std::vector;
 using std::string;
 using EVENT::Vertex;
 using EVENT::ReconstructedParticle;
+using EVENT::MCParticle;
 namespace TTbarAnalysis
 {
 	Particle::Particle ()
@@ -10,6 +11,14 @@ namespace TTbarAnalysis
 		myMomentum = NULL;
 		myVertex = NULL;
 		myMass = 0.0;
+		myTruthAngle = -1;
+		myVertexAngle = -1;
+		myHasDecayed = -1;
+		myBtag = -1.0;
+		myHits[0] = -1;
+		myHits[1] = -1;
+		myHits[2] = -1;
+		myMCParticle = NULL;
 	}
 	double * Particle::GetMomentum()
 	{
@@ -54,6 +63,80 @@ namespace TTbarAnalysis
 	void Particle::SetMass(float mass)
 	{
 		myMass = mass;
+	}
+	int Particle::GetGeneration()
+	{
+		return myGeneration;
+	}
+	void Particle::SetGeneration(int value)
+	{
+		myGeneration = value;
+	}
+	int Particle::GetIsReco()
+	{
+		return myIsReco;
+	}
+	void Particle::SetIsReco(int value)
+	{
+		myIsReco = value;
+	}
+	const int * Particle::GetHits()
+	{
+		return myHits;
+	}
+	void Particle::SetHits(int * value)
+	{
+		myHits[0] = value[0];
+		myHits[1] = value[1];
+		myHits[2] = value[2];
+	}
+	float Particle::GetChi2()
+	{
+		return myChi2;
+	}
+	void Particle::SetChi2(float value)
+	{
+		myChi2 = value;
+	}
+	float Particle::GetTruthAngle()
+	{
+		return myTruthAngle;
+	}
+	void Particle::SetTruthAngle(float value)
+	{
+		myTruthAngle = value;
+	}
+	int Particle::GetInteracted()
+	{
+		return myHasDecayed;
+	}
+	void Particle::SetInteracted(int value)
+	{
+		myHasDecayed = value;
+	}
+	float Particle::GetJetBtag()
+	{
+		return myBtag;
+	}
+	void Particle::SetJetBtag(float value)
+	{
+		myBtag = value;
+	}
+	MCParticle * Particle::GetMCParticle()
+	{
+		return myMCParticle;
+	}
+	void Particle::SetMCParticle(MCParticle * value)
+	{
+		myMCParticle = value;
+	}
+	float Particle::GetVertexAngle()
+	{
+		return myVertexAngle;
+	}
+	void Particle::SetVertexAngle(float value)
+	{
+		myVertexAngle = value;
 	}
 	
 	void Particle::Assign(ReconstructedParticle * initial)

@@ -19,6 +19,7 @@
 #include "MathOperator.hh"
 #include "VertexRecoOperator.hh"
 #include "JetOperator.hh"
+#include "ParticleOperator.hh"
 #include "JetVertexOperator.hh"
 #include "VertexTag.hh"
 #include <string>
@@ -62,10 +63,10 @@ namespace TTbarAnalysis
 	  /** Called after data processing for clean up.
 	   */
 	  virtual void end() ;
-	  void Write(VertexTag * tag, int number);
-	  void Write(Vertex * vertex, int number);
+	  void Write(VertexTag * tag);
+	  void Write(Vertex * vertex);
 	  void WriteMissed(Vertex * vertex, LCCollection * collection);
-	  void Write(std::vector< Jet * > * jets);
+	  void Write(std::vector< Jet * > * jets, LCCollection * rel, LCCollection * mc);
 	  Vertex * FindPrimaryVertex(const LCCollection * collection); 
 	  void PrintParticle(ReconstructedParticle * particle);
 	  LCCollection * WriteTagged(std::vector< Jet * > * jets);
@@ -85,8 +86,10 @@ namespace TTbarAnalysis
 	  std::string _colSecName ;
 	  std::string _colPriName ;
 	  std::string _colMCName;
+	  std::string _colPFOName;
 	  std::string _colProngsName;
 	  std::string _colRelName;
+	  std::string _colTrackRelName;
 	  std::string _colJetsName;
 	  std::string _colJetsRelName;
 	  std::string _colquarkName;
@@ -137,9 +140,10 @@ namespace TTbarAnalysis
 	  float _bprobmean;
 	  float _bbarprobmean;
 	  static const int MAXV2 = 36;
+	  static const int MAXV3 = 100;
 	  float _distances[MAXV2];
 	  int _numberOfDistances;
-	  static const int MAXV = 20;
+	  static const int MAXV = 15;
 	  float _distanceFromIP[MAXV];
 	  float _precision[MAXV];
 	  float _precisionT[MAXV];
@@ -156,8 +160,14 @@ namespace TTbarAnalysis
 	  float _energyOfParticles[MAXV][MAXV];
 	  float _momentumOfParticles[MAXV][MAXV];
 	  float _thetaOfParticles[MAXV][MAXV];
+	  float _ptOfParticles[MAXV][MAXV];
 	  float _costhetaOfParticles[MAXV][MAXV];
-	  float _massOfParticles[MAXV][MAXV];
+	  int _typeOfParticles[MAXV][MAXV];
+	  float _offsetOfParticles[MAXV][MAXV];
+	  float _chi2OfParticles[MAXV][MAXV];
+	  int _vtxHitsOfParticles[MAXV][MAXV];
+	  int _tpcHitsOfParticles[MAXV][MAXV];
+	  int _ftdHitsOfParticles[MAXV][MAXV];
 	  //TLorentzVector * _particles[MAXV][MAXV]
 	  Vertex * _primary;
 	  
@@ -166,22 +176,48 @@ namespace TTbarAnalysis
 	  float _ctags[MAXV];
 	  int _mcpdg[MAXV];
 	  int _nvertices[MAXV];
-
+	  float _costhetaJetParticles[MAXV][MAXV3];
+	  int _nJetParticles[MAXV];
+	  float _pJetParticles[MAXV][MAXV3];
+	  float _alphaJetParticles[MAXV][MAXV3];
+	  int _typeJetParticles[MAXV][MAXV3];
+	  int _prongJetParticles[MAXV][MAXV3];
+	  int _vtxJetParticles[MAXV][MAXV3];
 	  int _numberOfMissed;
 	  float _offsetMissed[MAXV];
 	  int _interactionMissed[MAXV];
 	  float _momentumMissed[MAXV];
 	  float _massMissed[MAXV];
 	  float _thetaMissed[MAXV];
+	  float _phiMissed[MAXV];
+	  float _ptMissed[MAXV];
+	  int _genMissed[MAXV];
+	  int _interactedMissed[MAXV];
 	  float _costhetaMissed[MAXV];
+	  int _isrecoMissed[MAXV];
+	  int _hastrackMissed[MAXV];
+	  float _omegatrackMissed[MAXV];
+	  float _distanceIPMissed[MAXV];
+	  float _chargeMissed[MAXV];
+	  float _vertexAngleMissed[MAXV];
+	  float _deviationMissed[MAXV];
+	  
+	  float _truthAngleMissed[MAXV];
+	  float _chi2Missed[MAXV];
+	  float _btagMissed[MAXV];
+	  int _vtxHitsMissed[MAXV];
+	  int _ftdHitsMissed[MAXV];
+	  int _tpcHitsMissed[MAXV];
 	
 	  int _numberOfMissedVtx;
 	  float _costhetaMissedVtx[MAXV];
+	  int _genMissedVtx[MAXV];
 	  float _momentumMissedVtx[MAXV];
 	  float _distanceMissedVtx[MAXV];
 	  int _numberOfTracksMissedVtx[MAXV];
 	  float _momentumOfParticlesVtx[MAXV][MAXV];
 	  float _costhetaOfParticlesVtx[MAXV][MAXV];
+	  float _ptOfParticlesVtx[MAXV][MAXV];
 	  float _offsetOfParticlesVtx[MAXV][MAXV];
 
 	  int _numberOfSecondaries;
@@ -189,6 +225,12 @@ namespace TTbarAnalysis
 	  int _primaryNumber;
 	  int _wovertexNumber;
 	  int _correctNumber;
+
+	  int _numberIncoming;
+	  int _numberTagged;
+	  int _numberMissed1;
+	  int _numberMissed2;
+	  int _numberNotHandled;
 	} ;
 		
 } /* TTbarAnalysis */

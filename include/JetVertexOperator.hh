@@ -27,7 +27,7 @@ namespace TTbarAnalysis
 		//
 		//	Constructors
 		//
-			JetVertexOperator ( );
+			JetVertexOperator (EVENT::LCCollection * pfo , EVENT::LCCollection * egprongs);
 			virtual ~JetVertexOperator () {};
 		//
 		//	Methods
@@ -39,12 +39,17 @@ namespace TTbarAnalysis
 			std::vector< EVENT::ReconstructedParticle * > * CompareTracks(const std::vector< EVENT::ReconstructedParticle * > & recotracks, const std::vector< EVENT::ReconstructedParticle * > & mctracks);
 			void CompareTracks(EVENT::Vertex * mcvertex, const std::vector< EVENT::ReconstructedParticle * > & recotracks, std::vector< EVENT::ReconstructedParticle * > * missedTotal, std::vector< Particle > * convertedTotal = NULL);
 			std::vector< EVENT::ReconstructedParticle * > * GetRecoParticles(EVENT::LCCollection * prongs, EVENT::LCCollection * rel);
-			
+			std::vector< EVENT::ReconstructedParticle * > * GetMissedTracksRel(EVENT::LCCollection * rel, std::vector< Jet * > * jets, std::vector< Particle > * converted = NULL, EVENT::LCCollection * out = NULL);
+			void CompareTracks(EVENT::Vertex * mcvertex, const std::vector< EVENT::ReconstructedParticle * > & recotracks, std::vector< EVENT::ReconstructedParticle * > * missedTotal, EVENT::LCCollection * rel, std::vector< Particle > * convertedTotal = NULL, float btag = -1.0);
+			std::vector< EVENT::ReconstructedParticle * > * CompareTracksRel(const std::vector< EVENT::MCParticle * > & recotracks, const std::vector< EVENT::ReconstructedParticle * > & mctracks);
+			float getVertexAngle(EVENT::ReconstructedParticle * recparticle, EVENT::Vertex * secvertex);
 		private:
 		//
 		//	Data
 		//
 			std::string myAlgorithmName;
+			EVENT::LCCollection * myPFO;
+			EVENT::LCCollection * myEGProngs;
 			float myAngleCut;
 			double ip[3];
 		//
@@ -55,6 +60,8 @@ namespace TTbarAnalysis
 			std::vector< Vertex * > * convert(const std::vector< LCObject * > & objs);
 			std::vector< VertexTag * > * tagOneVertex(std::vector< EVENT::Vertex * > & mcvertices, Vertex * recovertex);
 			bool compareToVertex(EVENT::Vertex * mcvertex,  std::vector< EVENT::Vertex * > * vertices);
+			std::vector< EVENT::ReconstructedParticle * > mapToPFO(const std::vector< EVENT::ReconstructedParticle * > & secondaries);
+			std::vector< EVENT::MCParticle * > mapToProngs(const std::vector< EVENT::ReconstructedParticle * > & secondaries);
 	};
 }
 #endif

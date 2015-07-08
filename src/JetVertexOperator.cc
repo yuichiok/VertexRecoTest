@@ -7,10 +7,12 @@ using EVENT::Vertex;
 using EVENT::ReconstructedParticle;
 namespace TTbarAnalysis 
 {
-	JetVertexOperator:: JetVertexOperator ( )
+	JetVertexOperator:: JetVertexOperator (EVENT::LCCollection * pfo, EVENT::LCCollection * egprongs )
 	{
+		myPFO = pfo;
+		myEGProngs = egprongs;
 		myAlgorithmName = "lcfiplus";
-		myAngleCut = 0.6;
+		myAngleCut = 0.5;
 		ip[0] = 0.0;
 		ip[1] = 0.0;
 		ip[2] = 0.0;
@@ -70,11 +72,13 @@ namespace TTbarAnalysis
 			{
 				ReconstructedParticle * mcparticle = mcvertex->getAssociatedParticle();
 				//bool found = false;
-				 
+				float minangle = myAngleCut;
+				int winner = -1;
 				for (int j = 0; j < jetnumber; j++) 
 				{
 					ReconstructedParticle * jetpart = dynamic_cast< ReconstructedParticle * >(jetcol->getElementAt(j));
 					bool found = false;
+
 					if (taken == jetpart->id()) 
 					{
 						//std::cout << "Jet skipped by index\n";
@@ -83,48 +87,59 @@ namespace TTbarAnalysis
 					vector< Vertex * > * vertices = convert(navigator.getRelatedToObjects(jetpart));
 					const vector< ReconstructedParticle * > components = jetpart->getParticles();
 					int nvtx = vertices->size();
-					if (nvtx > 0 && compareToVertex(mcvertex, vertices)) 
+					if (nvtx > 0) 
 					{
-						std::cout << "Jet tagged by vertices.\n";
-						found = true;
+						Vertex * recovertex = vertices->at(0);
+						float angle = MathOperator::getAngle(mcvertex->getAssociatedParticle()->getMomentum(), recovertex->getAssociatedParticle()->getMomentum());
+						if (angle < minangle / 2.0) 
+						{
+							minangle = angle;
+							winner = j;
+						}
 					}
 					if (nvtx == 0) 
 					{
-						for (unsigned int k = 0; k < components.size(); k++) 
+						for (int k = 0; k < components.size(); k++) 
 						{
 							ReconstructedParticle * leader = components.at(k);
 							float angle = MathOperator::getAngle(mcparticle->getMomentum(), leader->getMomentum());
-							if (angle < myAngleCut) 
+							if (angle < minangle) 
 							{
-								std::cout << "Jet tagged by particles.\n";
-								found = true;
-								break;
+								minangle = angle;
+								winner = j;
 							}
+							
 						}
 					}
-					if (found) 
-					{
-						const ParticleID& pid = pidh.getParticleID(jetpart,alid);
-						vector<float> params = pid.getParameters();
-						float btag = params[pidh.getParameterIndex(alid,"BTag")];
-						float ctag = params[pidh.getParameterIndex(alid,"CTag")];
-						taken = jetpart->id();
-						std::cout << "Jet energy: " << jetpart->getEnergy() 
-							  << " b-tag: " << btag 
-							  << " c-tag: " << ctag 
-						//	  << " angle-tag: " << angle 
-							  << " # of vtx: " << nvtx 
-							  <<  '\n';
-						Jet * jet = new Jet();
-						jet->SetBTag(btag);
-						jet->SetCTag(ctag);
-						jet->SetMCPDG(mcvertex->getParameters()[1]);
-						jet->SetParticles(components);
-						jet->SetRecoVertices(vertices);
-						result->push_back(jet);
-						//result->push_back(composeJet(jetpart, NULL, mcvertex->getParameters()[1]));
-						break;
-					}
+				}
+				if (winner > -1) 
+				{
+					ReconstructedParticle * jetpart = dynamic_cast< ReconstructedParticle * >(jetcol->getElementAt(winner));
+					vector< Vertex * > * vertices = convert(navigator.getRelatedToObjects(jetpart));
+					const vector< ReconstructedParticle * > components = jetpart->getParticles();
+					int nvtx = vertices->size();
+					const ParticleID& pid = pidh.getParticleID(jetpart,alid);
+					vector<float> params = pid.getParameters();
+					float btag = params[pidh.getParameterIndex(alid,"BTag")];
+					float ctag = params[pidh.getParameterIndex(alid,"CTag")];
+					taken = jetpart->id();
+					std::cout << "Jet energy: " << jetpart->getEnergy() 
+						  << " b-tag: " << btag 
+						  << " c-tag: " << ctag 
+						  << " angle-tag: " << minangle 
+						  << " # of vtx: " << nvtx 
+						  <<  '\n';
+					Jet * jet = new Jet();
+					jet->SetBTag(btag);
+					jet->SetCTag(ctag);
+					jet->SetMCPDG(mcvertex->getParameters()[1]);
+					jet->SetParticles(components);
+					jet->SetRecoVertices(vertices);
+					result->push_back(jet);
+				}
+				else 
+				{
+					std::cout << "ERROR: Jet not found!!!\n";
 				}
 			}
 		}
@@ -195,6 +210,123 @@ namespace TTbarAnalysis
 			}
 		}
 	}
+	
+	vector< ReconstructedParticle * > * JetVertexOperator::GetMissedTracksRel(LCCollection * rel, vector< Jet * > * jets, std::vector< Particle > * converted, LCCollection * out)
+	{
+		vector< ReconstructedParticle * > * result = new vector< ReconstructedParticle * >();
+		std::cout << "Start to extruct missing tracks...\n";
+		for (unsigned int i = 0; i < jets->size(); i++) 
+		{
+			std::cout << "Jet has " << jets->at(i)->GetVertexTags().size() << " tags\n";
+			float btag = jets->at(i)->GetBTag();
+			if (jets->at(i)->GetVertexTags().size() == 1) 
+			{
+				VertexTag * tag1 = jets->at(i)->GetVertexTags()[0];
+				if (tag1->GetStatus() != EMPTY_TAG) 
+				{
+					CompareTracks(tag1->__GetMCVertex(), tag1->GetVertex()->getAssociatedParticle()->getParticles(), result,rel, converted, btag);
+				}
+				continue;
+			}
+			VertexTag * tag1 = jets->at(i)->GetVertexTags()[0];
+			VertexTag * tag2 = jets->at(i)->GetVertexTags()[1];
+			if (tag2->GetStatus() == MERGED_TAG && tag1->GetStatus() == MERGED_TAG) 
+			{
+				std::cout << "We have a merged vertex case with " << tag1->__GetMCVertex()->getAssociatedParticle()->getParticles().size() + tag2->__GetMCVertex()->getAssociatedParticle()->getParticles().size() <<" mcparticles\n";
+				CompareTracks(tag1->__GetMCVertex(), tag1->GetVertex()->getAssociatedParticle()->getParticles(), result,rel, converted,btag);
+				CompareTracks(tag2->__GetMCVertex(), tag2->GetVertex()->getAssociatedParticle()->getParticles(), result,rel, converted,btag);
+			}
+			if (tag2->GetStatus() == PRECISE_TAG && tag1->GetStatus() == PRECISE_TAG) 
+			{
+				const vector< ReconstructedParticle * > fromtag1reco = tag1->GetVertex()->getAssociatedParticle()->getParticles();
+				const vector< ReconstructedParticle * > fromtag2reco = tag2->GetVertex()->getAssociatedParticle()->getParticles();
+				vector< ReconstructedParticle * > recounited;
+				recounited.reserve(fromtag1reco.size() + fromtag2reco.size());
+				recounited.insert(recounited.end(),fromtag1reco.begin(),fromtag1reco.end());
+				recounited.insert(recounited.end(),fromtag2reco.begin(),fromtag2reco.end());
+				std::cout << "We have a 2 recovertices case with " <<  recounited.size() << " recoparticles\n";
+				CompareTracks(tag1->__GetMCVertex(), recounited, result,rel, converted, btag);
+				CompareTracks(tag2->__GetMCVertex(), recounited, result,rel, converted, btag);
+			}
+			if (tag1->GetStatus() == PRECISE_TAG && tag2->GetStatus() == EMPTY_TAG) 
+			{
+				
+				std::cout << "We have one vertex case with " << tag1->__GetMCVertex()->getAssociatedParticle()->getParticles().size() << " mc particles & " << tag1->__GetMCVertex()->getAssociatedParticle()->getParticles().size() << " recoparticles\n";
+				CompareTracks(tag1->__GetMCVertex(), tag1->GetVertex()->getAssociatedParticle()->getParticles(), result, rel, converted,btag);
+			}
+			if (tag1->GetStatus() == EMPTY_TAG && tag2->GetStatus() == PRECISE_TAG) 
+			{
+				std::cout << "We have one vertex case with " << tag2->__GetMCVertex()->getAssociatedParticle()->getParticles().size() << " mc particles & " << tag2->__GetMCVertex()->getAssociatedParticle()->getParticles().size() << " recoparticles\n";
+				CompareTracks(tag2->__GetMCVertex(), tag2->GetVertex()->getAssociatedParticle()->getParticles(), result, rel, converted,btag);
+			}
+		}
+		return result;
+	}
+
+	void JetVertexOperator::CompareTracks(Vertex * mcvertex, const vector< ReconstructedParticle * > & recotracks, vector< ReconstructedParticle * > * missedTotal, LCCollection * rel, vector< Particle > * convertedTotal, float btag)
+	{
+		const vector< ReconstructedParticle * > mctracks = mcvertex->getAssociatedParticle()->getParticles();
+		vector< ReconstructedParticle * > recoPFOtracks = mapToPFO(recotracks);
+		vector< MCParticle * > recoRelatedPFOtracks = ParticleOperator::GetMCParticlesRel(recoPFOtracks, rel);
+
+		//vector< Particle > * result = new vector<Particle >();
+		vector< ReconstructedParticle * > * missed = CompareTracksRel(recoRelatedPFOtracks, mctracks);
+		vector< MCParticle * > egmissed = mapToProngs(*missed);
+		
+		missedTotal->reserve(missedTotal->size() +  missed->size());
+		missedTotal->insert(missedTotal->end(),missed->begin(),missed->end());
+		std::cout << "Number of missed tracks: " << missedTotal->size()  << '\n';
+		if (!convertedTotal) 
+		{
+			return;
+		}
+		for (int i = 0; i < missed->size(); i++) 
+		{
+			ReconstructedParticle * particle = missed->at(i);
+
+			MCParticle * missprong = egmissed.at(i);
+			ReconstructedParticle * matchedmissed = ParticleOperator::GetRecoParticle(missprong, rel);
+
+			vector< float > direction = MathOperator::getDirection(particle->getMomentum());
+			double * sec = MathOperator::toDoubleArray(mcvertex->getPosition(), 3);
+			vector< float > angles = MathOperator::getAngles(direction);
+			float offset = MathOperator::getDistanceTo(ip, direction, sec);
+			Particle missedParticle;
+			missedParticle.SetJetBtag(btag);
+			missedParticle.SetOffset(offset);
+			missedParticle.SetTheta(angles[1]);
+			missedParticle.SetMomentum(particle->getMomentum());
+			missedParticle.SetMass(particle->getMass());
+			missedParticle.SetVertex(mcvertex);
+			missedParticle.SetGeneration(mcvertex->getParameters()[2]);
+			missedParticle.SetInteracted(missprong->isDecayedInCalorimeter());
+			missedParticle.SetMCParticle(missprong);
+			int * hits = new int[3];
+			if (matchedmissed) 
+			{
+				missedParticle.SetVertexAngle(getVertexAngle(matchedmissed, mcvertex));
+				missedParticle.SetChi2(matchedmissed->getTracks()[0]->getChi2() / (float) matchedmissed->getTracks()[0]->getNdf());
+				missedParticle.SetIsReco(1);
+				hits[0] = matchedmissed->getTracks()[0]->getSubdetectorHitNumbers()[0];
+				hits[1] = matchedmissed->getTracks()[0]->getSubdetectorHitNumbers()[4];
+				hits[2] = matchedmissed->getTracks()[0]->getSubdetectorHitNumbers()[6];
+				missedParticle.SetTruthAngle(MathOperator::getAngleBtw(missprong->getMomentum(), matchedmissed->getMomentum()));
+				missedParticle.SetHits(hits);
+			}
+			else 
+			{
+				missedParticle.SetChi2(-1.0);
+				missedParticle.SetIsReco(0);
+			}
+			convertedTotal->push_back(missedParticle);
+			std::cout << "INFO: MISSED TRACK OFFSET:  " << offset
+				  << " VXD: " << hits[0]
+				  << " MOMENTUM: " << MathOperator::getModule(missedParticle.GetMomentum())
+				  << " COSTHETA: " << std::cos(missedParticle.GetTheta())
+				  << '\n';
+		}
+	}
+
 	std::vector< EVENT::MCParticle * > * JetVertexOperator::GetMissedTracks(EVENT::LCCollection * prongs, EVENT::LCCollection * rel,  EVENT::LCCollection * out)
 	{
 		vector< MCParticle * > * result = new vector< MCParticle * >();
@@ -286,7 +418,6 @@ namespace TTbarAnalysis
 	vector< ReconstructedParticle * > * JetVertexOperator::GetMissedTracks(std::vector< Jet * > * jets, std::vector< Particle > * converted)
 	{
 		vector< ReconstructedParticle * > * result = new vector< ReconstructedParticle * >();
-		//converted = new vector< Particle >();
 		std::cout << "Start to extruct missing tracks...\n";
 		for (unsigned int i = 0; i < jets->size(); i++) 
 		{
@@ -295,26 +426,12 @@ namespace TTbarAnalysis
 			VertexTag * tag2 = jets->at(i)->GetVertexTags()[1];
 			if (tag2->GetStatus() == MERGED_TAG && tag1->GetStatus() == MERGED_TAG) 
 			{
-				/*const vector< ReconstructedParticle * > fromtag1 = tag1->__GetMCVertex()->getAssociatedParticle()->getParticles();
-				const vector< ReconstructedParticle * > fromtag2 = tag2->__GetMCVertex()->getAssociatedParticle()->getParticles();
-				vector< ReconstructedParticle * > mcunited;
-				mcunited.reserve(fromtag1.size() + fromtag2.size());
-				mcunited.insert(mcunited.end(),fromtag1.begin(),fromtag1.end());
-				mcunited.insert(mcunited.end(),fromtag2.begin(),fromtag2.end());
-				std::cout << "We have a merged vertex case with " << mcunited.size() << " mc particles & " << tag1->GetVertex()->getAssociatedParticle()->getParticles().size() << " recoparticles\n";*/
 				std::cout << "We have a merged vertex case with " << tag1->__GetMCVertex()->getAssociatedParticle()->getParticles().size() + tag2->__GetMCVertex()->getAssociatedParticle()->getParticles().size() <<" mcparticles\n";
 				CompareTracks(tag1->__GetMCVertex(), tag1->GetVertex()->getAssociatedParticle()->getParticles(), result, converted);
 				CompareTracks(tag2->__GetMCVertex(), tag2->GetVertex()->getAssociatedParticle()->getParticles(), result, converted);
-				//result = CompareTracks(tag1->GetVertex()->getAssociatedParticle()->getParticles(), mcunited);
 			}
 			if (tag2->GetStatus() == PRECISE_TAG && tag1->GetStatus() == PRECISE_TAG) 
 			{
-				/*const vector< ReconstructedParticle * > fromtag1 = tag1->__GetMCVertex()->getAssociatedParticle()->getParticles();
-				const vector< ReconstructedParticle * > fromtag2 = tag2->__GetMCVertex()->getAssociatedParticle()->getParticles();
-				vector< ReconstructedParticle * > mcunited;
-				mcunited.reserve(fromtag1.size() + fromtag2.size());
-				mcunited.insert(mcunited.end(),fromtag1.begin(),fromtag1.end());
-				mcunited.insert(mcunited.end(),fromtag2.begin(),fromtag2.end());*/
 				const vector< ReconstructedParticle * > fromtag1reco = tag1->GetVertex()->getAssociatedParticle()->getParticles();
 				const vector< ReconstructedParticle * > fromtag2reco = tag2->GetVertex()->getAssociatedParticle()->getParticles();
 				vector< ReconstructedParticle * > recounited;
@@ -324,21 +441,17 @@ namespace TTbarAnalysis
 				std::cout << "We have a 2 recovertices case with " <<  recounited.size() << " recoparticles\n";
 				CompareTracks(tag1->__GetMCVertex(), recounited, result, converted);
 				CompareTracks(tag2->__GetMCVertex(), recounited, result, converted);
-				//result = CompareTracks(recounited, mcunited);
-				
 			}
 			if (tag1->GetStatus() == PRECISE_TAG && tag2->GetStatus() == EMPTY_TAG) 
 			{
 				
 				std::cout << "We have one vertex case with " << tag1->__GetMCVertex()->getAssociatedParticle()->getParticles().size() << " mc particles & " << tag1->__GetMCVertex()->getAssociatedParticle()->getParticles().size() << " recoparticles\n";
 				CompareTracks(tag1->__GetMCVertex(), tag1->GetVertex()->getAssociatedParticle()->getParticles(), result, converted);
-				//result = CompareTracks(tag1->GetVertex()->getAssociatedParticle()->getParticles(), tag1->__GetMCVertex()->getAssociatedParticle()->getParticles());
 			}
 			if (tag1->GetStatus() == EMPTY_TAG && tag2->GetStatus() == PRECISE_TAG) 
 			{
 				std::cout << "We have one vertex case with " << tag2->__GetMCVertex()->getAssociatedParticle()->getParticles().size() << " mc particles & " << tag2->__GetMCVertex()->getAssociatedParticle()->getParticles().size() << " recoparticles\n";
 				CompareTracks(tag2->__GetMCVertex(), tag2->GetVertex()->getAssociatedParticle()->getParticles(), result, converted);
-				//result = CompareTracks(tag2->GetVertex()->getAssociatedParticle()->getParticles(), tag2->__GetMCVertex()->getAssociatedParticle()->getParticles());
 			}
 		}
 		return result;
@@ -399,7 +512,29 @@ namespace TTbarAnalysis
 		}
 		return result;
 	}
-
+	vector< ReconstructedParticle * > * JetVertexOperator::CompareTracksRel(const vector< MCParticle * > & recotracks, const vector< ReconstructedParticle * > & mctracks)
+	{
+		vector< ReconstructedParticle * > * result = new vector< ReconstructedParticle * >();
+		for (unsigned int i = 0; i < mctracks.size(); i++) 
+		{
+			ReconstructedParticle * mcparticle = mctracks[i];
+			bool found = false;
+			for (unsigned int j = 0; j < recotracks.size(); j++) 
+			{
+				MCParticle * recoparticle = recotracks[j];
+				if (ParticleOperator::CompareParticles(recoparticle,mcparticle)) 
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found) 
+			{
+				result->push_back(mcparticle);
+			}
+		}
+		return result;
+	}
 	
 	vector< VertexTag * > * JetVertexOperator::tagOneVertex(vector< Vertex * > & mcvertices, Vertex * recovertex)
 	{
@@ -466,7 +601,25 @@ namespace TTbarAnalysis
 		}
 		int taken = -1;
 		std::cout << "Begin tagging:\n";
-
+		if (mcvertices.size() == 1) 
+		{
+			Vertex * mcvertex = mcvertices[0];
+			std::cout << "\tOne mc vertex mode:\n";
+			if (recovertices->size() == 0) 
+			{
+				VertexTag * tag = new VertexTag(mcvertex);
+				tag->SetStatus(EMPTY_TAG);
+				jet->AddVertexTag(tag);
+			}
+			for (int i = 0; i < recovertices->size(); i++) 
+			{
+				VertexTag * tag = new VertexTag(mcvertex);
+				tag->SetRecoVertex(recovertices->at(i));
+				tag->SetStatus(MERGED_TAG);
+				jet->AddVertexTag(tag);
+			}
+			return;
+		}
 		if (recovertices->size() == 1) 
 		{
 			Vertex * recovertex = recovertices->at(0);
@@ -503,7 +656,7 @@ namespace TTbarAnalysis
 					taken = 1;
 				}
 				std::cout << "\tOne of two vertices tagged with " << distance1 << " vs " << distance2 <<" \n";
-				tag->SetStatus(PRECISE_TAG);
+				tag->SetStatus(PRECISE_TAG);//PRECISE_TAG
 				jet->AddVertexTag(tag);
 				continue;
 			}
@@ -529,4 +682,82 @@ namespace TTbarAnalysis
 		}
 		return result;
 	}
+	
+	vector< ReconstructedParticle * > JetVertexOperator::mapToPFO(const vector< ReconstructedParticle * > & secondaries)
+	{
+		int pfonumber = myPFO->getNumberOfElements();
+		vector< ReconstructedParticle * > result;
+		for (int i = 0; i < pfonumber; i++) 
+		{
+			ReconstructedParticle * recopfo = dynamic_cast< ReconstructedParticle * >(myPFO->getElementAt(i));
+			if (std::abs(recopfo->getCharge()) < 0.1 ) 
+			{
+				continue;
+			}
+			for (int j = 0; j < secondaries.size(); j++) 
+			{
+				if (ParticleOperator::CompareParticles(recopfo, secondaries[j])) 
+				{
+					result.push_back(recopfo);
+					break;
+				}
+			}
+		}
+		return result;
+	}
+	vector< MCParticle * > JetVertexOperator::mapToProngs(const vector< ReconstructedParticle * > & secondaries)
+	{
+		int number = myEGProngs->getNumberOfElements();
+		vector< MCParticle * > result;
+		for (int i = 0; i < number; i++) 
+		{
+			MCParticle * prong = dynamic_cast< MCParticle * >(myEGProngs->getElementAt(i));
+			for (int j = 0; j < secondaries.size(); j++) 
+			{
+				if (ParticleOperator::CompareParticles(prong, secondaries[j])) 
+				{
+					result.push_back(prong);
+					break;
+				}
+			}
+		}
+		return result;
+	}
+	float JetVertexOperator::getVertexAngle(ReconstructedParticle * particle, Vertex * secvertex)
+	{
+		double * start = new double[3];
+		Track * track = NULL; //particle->getTracks()[0];
+		/*for (int i = 0; i < particle->getTracks()[0]->getTracks().size(); i++) 
+		{
+			if (particle->getTracks()[0]->getTracks()[i]->getSubdetectorHitNumbers()[0] > 0) 
+			{
+				std::cout << " i: " << i << " hits: " << particle->getTracks()[0]->getTracks()[i]->getSubdetectorHitNumbers()[0] << " size: " << particle->getTracks()[0]->getTracks().size() <<  "\n";
+				track = particle->getTracks()[0]->getTracks()[i];
+				particle = ParticleOperator::ReconstructParticle(track);
+			}
+		}*/
+		if (!track) 
+		{
+			track = particle->getTracks()[0];
+		}
+		float d0 = track->getD0();
+		float z0 = track->getZ0();
+		float phi0 = track->getPhi();
+		start[0] =  - d0 * std::sin(phi0);
+		start[1] =  d0 * std::cos(phi0);
+		start[2] = z0;
+		
+		double * secondaryPosition = MathOperator::toDoubleArray(secvertex->getPosition(),3);
+		vector<float> diff = MathOperator::getDirection(secondaryPosition, start);
+		double diif[3];
+		for (int m = 0; m < 3; m++) 
+		{
+			diif[m] = diff[m];
+		}
+		float angle = MathOperator::getAngle(diif, particle->getMomentum());
+		return angle;
+	}
+
+
+
 }

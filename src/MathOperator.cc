@@ -356,6 +356,10 @@ namespace TTbarAnalysis
 		point->push_back(z);
 		return point;
 	}
+	float MathOperator::getPt(const double * momentum)
+	{
+		return std::sqrt(momentum[0] * momentum[0] + momentum[1] * momentum[1]);
+	}
 	double * MathOperator::getPtOnVector(const double * momentum, const float * target)
 	{
 		double * converted = toDoubleArray(target, 3);
