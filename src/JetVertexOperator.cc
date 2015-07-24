@@ -62,7 +62,16 @@ namespace TTbarAnalysis
 		vector< Jet * > * result = new vector< Jet * >();
 		LCRelationNavigator navigator(rel);
 		PIDHandler pidh(jetcol);
-		int alid = pidh.getAlgorithmID(myAlgorithmName);
+		int alid;
+		try
+		{
+			alid = pidh.getAlgorithmID("vtxrec");
+		}
+		catch(UTIL::UnknownAlgorithm &e)
+		{
+			std::cout << "No algorithm vtxrec!\n";
+			alid = pidh.getAlgorithmID(myAlgorithmName);
+		}	
 		int taken = -1;
 		for (int i = 0; i < mcnumber; i++) 
 		{
@@ -129,9 +138,9 @@ namespace TTbarAnalysis
 						  << " angle-tag: " << minangle 
 						  << " # of vtx: " << nvtx 
 						  <<  '\n';
-					Jet * jet = new Jet();
-					jet->SetBTag(btag);
-					jet->SetCTag(ctag);
+					Jet * jet = new Jet(btag, ctag, nvtx, jetpart->getMomentum());
+					//jet->SetBTag(btag);
+					//jet->SetCTag(ctag);
 					jet->SetMCPDG(mcvertex->getParameters()[1]);
 					jet->SetParticles(components);
 					jet->SetRecoVertices(vertices);
@@ -694,11 +703,13 @@ namespace TTbarAnalysis
 			{
 				continue;
 			}
+			//std::cout << "Particle mapping begin:\n";
 			for (int j = 0; j < secondaries.size(); j++) 
 			{
 				if (ParticleOperator::CompareParticles(recopfo, secondaries[j])) 
 				{
 					result.push_back(recopfo);
+					//std::cout << "Particle mapped!\n";
 					break;
 				}
 			}

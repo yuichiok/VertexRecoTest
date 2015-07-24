@@ -16,12 +16,12 @@ namespace TTbarAnalysis
 	}
 	bool ParticleOperator::CompareParticles(ReconstructedParticle * particle1, ReconstructedParticle * particle2)
 	{
+		//std::cout << "Comparing particles with modules " << recomodule << " & " << mcmodule << "\n";
 		if (particle1 == particle2) 
 		{
 			//std::cout << "Equal by pointer\n";
 			return true;
 		}
-		//std::cout << "Comparing particles with modules " << recomodule << " & " << mcmodule << "\n";
 		if (particle1->getCharge() * particle2->getCharge() < 0.0) 
 		{
 			//std::cout << "Rejected by charge\n";
@@ -41,6 +41,7 @@ namespace TTbarAnalysis
 			//std::cout << "Rejected by ratio " << ratio << "\n";
 			return false;
 		}
+		//std::cout << "Particles equal!\n";
 		return true;
 	}
 	bool ParticleOperator::CompareParticles(MCParticle * particle1, ReconstructedParticle * particle2)

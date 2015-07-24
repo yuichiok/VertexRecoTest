@@ -100,6 +100,19 @@ namespace TTbarAnalysis
 		}
 		return momentum;
 	}
+	float Jet::GetHadronMass()
+	{
+		float mass = -1.0;
+		if (myRecoVertices) 
+		{
+			 mass = 0.0;
+			 for (int i = 0; i < myRecoVertices->size(); i++) 
+			 {
+			 	mass += myRecoVertices->at(i)->getAssociatedParticle()->getMass();
+			 }
+		}
+		return mass;
+	}
 	const double * Jet::GetMomentum()
 	{
 		return myMomentum;

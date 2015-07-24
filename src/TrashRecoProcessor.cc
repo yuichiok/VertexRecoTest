@@ -152,10 +152,14 @@ namespace TTbarAnalysis
 		_hTree->Branch("bbarnumber", &_bbarnumber1, "bbarnumber1/I");
 		_hTree->Branch("bcharge", &_bcharge, "bcharge/I");
 		_hTree->Branch("bbarcharge", &_bbarcharge, "bbarcharge/I");
+		_hTree->Branch("bnoffsettracks", &_bnoffsettracks, "bbnoffsettracks/I");
+		_hTree->Branch("bbarnoffsettracks", &_bbarnoffsettracks, "bbarnoffsettracks/I");
 		_hTree->Branch("bteta", &_bteta, "bteta/F");
 		_hTree->Branch("bbarteta", &_bbarteta, "bbarteta/F");
 		_hTree->Branch("btag", &_btag, "btag/F");
+		_hTree->Branch("bmass", &_bmass, "bmass/F");
 		_hTree->Branch("bbartag", &_bbartag, "bbartag/F");
+		_hTree->Branch("bbarmass", &_bbarmass, "bbarmass/F");
 		_hTree->Branch("bptmiss", &_bptmiss, "bptmiss/F");
 		_hTree->Branch("bbarptmiss", &_bbarptmiss, "bbarptmiss/F");
 		_hTree->Branch("bmomentum", &_bmomentum, "bmomentum/F");
@@ -213,6 +217,7 @@ namespace TTbarAnalysis
 		_hJetTree->Branch("btags", _btags, "btags[numberOfJets]/F");
 		_hJetTree->Branch("ctags", _ctags, "ctags[numberOfJets]/F");
 		_hJetTree->Branch("mcpdg", _mcpdg, "mcpdg[numberOfJets]/I");
+		_hJetTree->Branch("maxalphaJetParticles", _maxalphaJetParticles, "maxalphaJetParticles[numberOfJets]/F");
 		_hJetTree->Branch("nJetParticles", _nJetParticles, "nJetParticles[numberOfJets]/I");
 		_hJetTree->Branch("pJetParticles", _pJetParticles, "pJetParticles[numberOfJets][100]/F");
 		_hJetTree->Branch("costhetaJetParticles", _costhetaJetParticles, "costhetaJetParticles[numberOfJets][100]/F");
@@ -623,19 +628,24 @@ namespace TTbarAnalysis
 		{
 			const vector< VertexTag * > tagged = jets->at(i)->GetVertexTags();
 			Jet * jet = jets->at(i);
+			int noffset = getTracksWithOffsets(jet);
 			if (jet->GetMCPDG() > 0) 
 			{
+				_bnoffsettracks = noffset;
 				_bmomentum = jet->GetHadronMomentum();
 				_bnumber1 = jet->GetNumberOfVertexParticles();
 				_bcharge = jet->GetHadronCharge();
 				_btag = jet->GetBTag();
+				_bmass = jet->GetHadronMass();
 			}
 			if (jet->GetMCPDG() < 0) 
 			{
+				_bbarnoffsettracks = noffset;
 				_bbarmomentum = jet->GetHadronMomentum();
 				_bbarnumber1 = jet->GetNumberOfVertexParticles();
 				_bbarcharge = jet->GetHadronCharge();
 				_bbartag = jet->GetBTag();
+				_bbarmass = jet->GetHadronMass();
 			}
 			WriteVertex(jet->GetVertexTags(), reco);
 			std::cout << "Printing vertices with PDG " << jet->GetMCPDG() << ":\n";
@@ -659,6 +669,71 @@ namespace TTbarAnalysis
 		} 
 		std::cout << "Total bnumber: " << _bnumber1 << "\nTotal bbarnumber: "<< _bbarnumber1 << "\n";
 		return reco;
+	}
+	int TrashRecoProcessor::getTracksWithOffsets( Jet * jet)
+	{
+		const vector< ReconstructedParticle * > * particles = jet->GetParticles();
+		int result = 0;
+		vector< Vertex * > * vertices = jet->GetRecoVertices();
+		vector< ReconstructedParticle * > prongs;
+		for (int i = 0; i < vertices->size(); i++) 
+		{
+			prongs.reserve(prongs.size() + vertices->at(i)->getAssociatedParticle()->getParticles().size());
+			prongs.insert(prongs.end(),vertices->at(i)->getAssociatedParticle()->getParticles().begin(), vertices->at(i)->getAssociatedParticle()->getParticles().end());
+		}
+		std::cout << "Jet p: " << MathOperator::getModule(jet->GetMomentum()) << " nprongs: " << prongs.size();
+		double * primaryPosition = MathOperator::toDoubleArray(_primary->getPosition(),3);
+		float anglemax = 0.0;
+		for (int i = 0; i < particles->size(); i++) 
+		{
+			ReconstructedParticle * particle = particles->at(i);
+			if (abs(particle->getCharge()) < 0.9 ) 
+			{
+				continue;
+			}
+			float p =  MathOperator::getModule(particle->getMomentum());
+			if (p < 1.0) 
+			{
+				continue;
+			}
+			float angle = MathOperator::getAngle(particle->getMomentum(), jet->GetMomentum());
+			anglemax = (angle > anglemax)? angle: anglemax;
+		}
+		std::cout << " a: " << anglemax ;
+		float anglecut = (anglemax > 1.0)? anglemax*0.8: anglemax*0.8;
+		for (int i = 0; i < particles->size(); i++) 
+		{
+			ReconstructedParticle * particle = particles->at(i);
+
+			if (abs(particle->getCharge()) > 0.9 && particle->getTracks()[0]->getSubdetectorHitNumbers()[0] > 3) 
+			{
+				double * trackPosition = myTrackOperator.GetStartPoint(particle);
+				vector<float> direction = MathOperator::getDirection(particle->getMomentum());
+				float offset = MathOperator::getDistanceTo(primaryPosition, direction, trackPosition);
+				float accuracy = ParticleOperator::GetError(particle);
+				float angle = MathOperator::getAngle(particle->getMomentum(), jet->GetMomentum());
+				float p =  MathOperator::getModule(particle->getMomentum());
+				if (offset / accuracy > 5 && angle < anglecut && p > .50) //std::sqrt(angle) * 15.0 + 1.0
+				{
+					bool isprong = false;
+					for (int j = 0; j < prongs.size(); j++) 
+					{
+						if (ParticleOperator::CompareParticles(prongs[j], particle)) 
+						{
+							isprong = true;
+							std::cout << " prong ";
+							break;
+						}
+					}
+					if (!isprong) 
+					{
+						result++;
+					}
+				}
+			}
+		}
+		std::cout << " ncandidates: " << result << "\n";
+		return result;
 	}
 	void TrashRecoProcessor::WriteTagged(vector< VertexTag * > * tagged)
 	{
@@ -783,6 +858,7 @@ namespace TTbarAnalysis
 			vector< MCParticle * > mcparticles = ParticleOperator::GetMCParticlesRel(*(jets->at(i)->GetParticles()), rel);
 			int count = 0;
 			std::cout << "Jet btag: "<< _btags[i] << "\n";
+			_maxalphaJetParticles[i] = 0.0;
 			for (int j = 0; j < _nJetParticles[i]; j++) 
 			{
 				ReconstructedParticle * particle = jets->at(i)->GetParticles()->at(j);
@@ -796,6 +872,7 @@ namespace TTbarAnalysis
 				_pJetParticles[i][j] = MathOperator::getModule(particle->getMomentum());
 				_typeJetParticles[i][j] = abs(particle->getType());
 				_alphaJetParticles[i][j] = MathOperator::getAngleBtw(jets->at(i)->GetMomentum(),particle->getMomentum());
+				_maxalphaJetParticles[i] = (_alphaJetParticles[i][j] > _maxalphaJetParticles[i])? _alphaJetParticles[i][j] : _maxalphaJetParticles[i];
 				if (particle->getStartVertex()) 
 				{
 					_vtxJetParticles[i][j] = (particle->getStartVertex()->isPrimary())? 1:2;
@@ -953,6 +1030,8 @@ namespace TTbarAnalysis
 		_bptmiss = -1.0;
 		_bcharge = -5;
 		_bbarcharge = -5;
+		_bnoffsettracks = -1;
+		_bbarnoffsettracks = -1;
 		_bbarIPdistance = -1.0;
 		_bIPdistance = -1.0;
 		/*_misrecoNumber = 0;

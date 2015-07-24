@@ -38,6 +38,7 @@ namespace TTbarAnalysis
 			int GetNumberOfVertexParticles();
 			float GetHadronCharge();
 			float GetHadronMomentum();
+			float GetHadronMass();
 			const double * GetMomentum();
 			int GetMCPDG();
 			void SetMCPDG(int pdg);

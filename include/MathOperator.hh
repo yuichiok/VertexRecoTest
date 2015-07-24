@@ -36,6 +36,8 @@ namespace TTbarAnalysis
 			static float getDistance(const float * start, const float * end);
 			static std::vector< float > * vectorProduct(const std::vector< float > & v1,const std::vector< float > & v2);
 			
+			static float getDistanceBtw(const double * vectorPoint1, std::vector< float > & vectorDirection1,const double * vectorPoint2, std::vector< float > & vectorDirection2 );
+			
 			static float getDistanceTo(const std::vector< int > & vectorPoint1,const std::vector< float > & vector1, const std::vector< int > * pointOfLine );
 			static float getDistanceTo(const double * vectorPoint1, std::vector< float > & vector1,const double * pointOfLine );
 			

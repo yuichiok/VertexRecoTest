@@ -17,6 +17,7 @@
 #include "lcio.h"
 
 #include "MathOperator.hh"
+#include "TrackOperator.hh"
 #include "VertexRecoOperator.hh"
 #include "JetOperator.hh"
 #include "ParticleOperator.hh"
@@ -75,6 +76,7 @@ namespace TTbarAnalysis
 	  void WriteTaggedCollection(LCEvent * evt, std::vector< VertexTag * > * tags);
 	  float getMissingPt(std::vector< ReconstructedParticle * > & bdaugthers, std::vector< VertexTag * > * tags, int pdg);
 	  VertexTag * getBvertex(std::vector< VertexTag * > * tags, int pdg);
+	  int getTracksWithOffsets( Jet * jet);
 	  void ClearVariables();
 	  void AnalyseSecondaries(const LCCollection * prongs,const LCCollection * rel, const LCCollection * reco);
 	  void Write(LCEvent * evt, std::vector< Particle > * missed, std::vector< ReconstructedParticle * > * m = NULL);
@@ -113,7 +115,7 @@ namespace TTbarAnalysis
 	  std::string _hfilename ;
 	  float _angleAcceptance;	  
 	  int _handleJets; 
-
+	  TrackOperator myTrackOperator;
 	  int _numberOfTagged;
 	  int _numberOfTotal;
 	  int _numberOfTernary;
@@ -121,6 +123,8 @@ namespace TTbarAnalysis
 	  int _numberOfUnknown;
 	  int _bnumber1;
 	  int _bbarnumber1;
+	  int _bnoffsettracks;
+	  int _bbarnoffsettracks;
 	  float _btag;
 	  float _bbartag;
 	  float _bmomentum;
@@ -132,6 +136,8 @@ namespace TTbarAnalysis
 	  float _bptmiss;
 	  float _bbarptmiss;
 	  float _bbarteta;
+	  float _bbarmass;
+	  float _bmass;
 	  float _bteta;
 	  float _bIPdistance;
 	  float _bbarIPdistance;
@@ -180,6 +186,7 @@ namespace TTbarAnalysis
 	  int _nJetParticles[MAXV];
 	  float _pJetParticles[MAXV][MAXV3];
 	  float _alphaJetParticles[MAXV][MAXV3];
+	  float _maxalphaJetParticles[MAXV];
 	  int _typeJetParticles[MAXV][MAXV3];
 	  int _prongJetParticles[MAXV][MAXV3];
 	  int _vtxJetParticles[MAXV][MAXV3];
