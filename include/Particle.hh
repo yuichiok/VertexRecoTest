@@ -72,7 +72,7 @@ namespace TTbarAnalysis
 			float myBtag;
 			int myGeneration;
 			int myIsReco;
-			int myHits[3];
+			int myHits[4];
 			int myHasDecayed;
 			float myChi2;
 		//

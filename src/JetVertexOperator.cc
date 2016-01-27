@@ -12,7 +12,7 @@ namespace TTbarAnalysis
 		myPFO = pfo;
 		myEGProngs = egprongs;
 		myAlgorithmName = "lcfiplus";
-		myAngleCut = 0.5;
+		myAngleCut = 1.;
 		ip[0] = 0.0;
 		ip[1] = 0.0;
 		ip[2] = 0.0;
@@ -310,7 +310,7 @@ namespace TTbarAnalysis
 			missedParticle.SetGeneration(mcvertex->getParameters()[2]);
 			missedParticle.SetInteracted(missprong->isDecayedInCalorimeter());
 			missedParticle.SetMCParticle(missprong);
-			int * hits = new int[3];
+			int * hits = new int[4];
 			if (matchedmissed) 
 			{
 				missedParticle.SetVertexAngle(getVertexAngle(matchedmissed, mcvertex));
@@ -319,6 +319,7 @@ namespace TTbarAnalysis
 				hits[0] = matchedmissed->getTracks()[0]->getSubdetectorHitNumbers()[0];
 				hits[1] = matchedmissed->getTracks()[0]->getSubdetectorHitNumbers()[4];
 				hits[2] = matchedmissed->getTracks()[0]->getSubdetectorHitNumbers()[6];
+				hits[3] = matchedmissed->getTracks()[0]->getSubdetectorHitNumbers()[2];
 				missedParticle.SetTruthAngle(MathOperator::getAngleBtw(missprong->getMomentum(), matchedmissed->getMomentum()));
 				missedParticle.SetHits(hits);
 			}

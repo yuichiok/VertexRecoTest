@@ -159,6 +159,7 @@ namespace TTbarAnalysis
 	  float _probability[MAXV];
 	  float _angle[MAXV];
 	  int _charge[MAXV];
+	  int _truthNumber[MAXV];
 	  float _mindistance[MAXV];
 	  float _chi2[MAXV];
 	  int _generation[MAXV];
@@ -174,6 +175,7 @@ namespace TTbarAnalysis
 	  int _vtxHitsOfParticles[MAXV][MAXV];
 	  int _tpcHitsOfParticles[MAXV][MAXV];
 	  int _ftdHitsOfParticles[MAXV][MAXV];
+	  int _sitHitsOfParticles[MAXV][MAXV];
 	  //TLorentzVector * _particles[MAXV][MAXV]
 	  Vertex * _primary;
 	  
@@ -184,6 +186,7 @@ namespace TTbarAnalysis
 	  int _nvertices[MAXV];
 	  float _costhetaJetParticles[MAXV][MAXV3];
 	  int _nJetParticles[MAXV];
+	  float _vtxAngleJetAxis[MAXV];
 	  float _pJetParticles[MAXV][MAXV3];
 	  float _alphaJetParticles[MAXV][MAXV3];
 	  float _maxalphaJetParticles[MAXV];
@@ -215,6 +218,7 @@ namespace TTbarAnalysis
 	  int _vtxHitsMissed[MAXV];
 	  int _ftdHitsMissed[MAXV];
 	  int _tpcHitsMissed[MAXV];
+	  int _sitHitsMissed[MAXV];
 	
 	  int _numberOfMissedVtx;
 	  float _costhetaMissedVtx[MAXV];

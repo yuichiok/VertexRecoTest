@@ -39,6 +39,7 @@ namespace TTbarAnalysis
 			float GetHadronCharge();
 			float GetHadronMomentum();
 			float GetHadronMass();
+			float GetHadronDistance();
 			const double * GetMomentum();
 			int GetMCPDG();
 			void SetMCPDG(int pdg);

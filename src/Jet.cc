@@ -113,6 +113,26 @@ namespace TTbarAnalysis
 		}
 		return mass;
 	}
+	float Jet::GetHadronDistance()
+	{
+		float distance = 1000.0;
+		if (myRecoVertices && myRecoVertices->size() > 0) 
+		{
+			for (int i = 0; i < myRecoVertices->size(); i++) 
+			{
+				float current = MathOperator::getModule(myRecoVertices->at(i)->getPosition());
+				if (current < distance) 
+				{
+					distance = current;
+				}
+			}
+		}
+		else 
+		{
+			distance = -1.0;
+		}
+		return distance;
+	}
 	const double * Jet::GetMomentum()
 	{
 		return myMomentum;

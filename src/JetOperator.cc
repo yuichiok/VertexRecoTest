@@ -48,6 +48,7 @@ namespace TTbarAnalysis
 		{
 			ReconstructedParticle * jet = dynamic_cast< ReconstructedParticle * >(jets->getElementAt(i));
 			int nvtx = navigator.getRelatedToObjects(jet).size();
+
 			const ParticleID& pid = pidh.getParticleID(jet,alid);
 			vector<float> params = pid.getParameters();
 			float btag = params[pidh.getParameterIndex(alid,"BTag")];
@@ -67,6 +68,11 @@ namespace TTbarAnalysis
 					  <<  '\n';
 			}*/
 			Jet * tag = new Jet(btag, ctag, nvtx, jet->getMomentum());
+			if (nvtx > 0) 
+			{
+				vector< Vertex * > * vertices = convert(navigator.getRelatedToObjects(jet));
+				tag->SetRecoVertices(vertices);
+			}
 			tag->SetParticles(components);
 			result->push_back(tag);
 		}
@@ -143,4 +149,14 @@ namespace TTbarAnalysis
 			}
 		}
 	}
+	std::vector< Vertex * > * JetOperator::convert(const std::vector< LCObject * > & objs)
+	{
+		std::vector< Vertex * > * result = new std::vector< Vertex * >();
+		for (int i = 0; i < objs.size(); i++) 
+		{
+			result->push_back(dynamic_cast< Vertex * >(objs[i]));
+		}
+		return result;
+	}
+	
 }

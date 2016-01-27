@@ -18,6 +18,7 @@ namespace TTbarAnalysis
 		myHits[0] = -1;
 		myHits[1] = -1;
 		myHits[2] = -1;
+		myHits[3] = -1;
 		myMCParticle = NULL;
 	}
 	double * Particle::GetMomentum()
@@ -89,6 +90,7 @@ namespace TTbarAnalysis
 		myHits[0] = value[0];
 		myHits[1] = value[1];
 		myHits[2] = value[2];
+		myHits[3] = value[3];
 	}
 	float Particle::GetChi2()
 	{

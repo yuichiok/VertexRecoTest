@@ -4,6 +4,7 @@
 #include <string>
 #include "Jet.hh"
 #include <EVENT/LCCollection.h>
+#include <EVENT/LCObject.h>
 #include <EVENT/MCParticle.h>
 #include <EVENT/ReconstructedParticle.h>
 #include <UTIL/PIDHandler.h>
@@ -43,6 +44,7 @@ namespace TTbarAnalysis
 		//
 		//	Private methods
 		//
+			std::vector< EVENT::Vertex * > * convert(const std::vector< EVENT::LCObject * > & objs);
 	};
 }
 #endif
