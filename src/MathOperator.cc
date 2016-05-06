@@ -133,7 +133,7 @@ namespace TTbarAnalysis
 		float result = acos(product);
 		if (isnan(result)) 
 		{
-			if (product > 0.999) 
+			if (product >= 1.) 
 			{
 				return 0.0;
 			}
@@ -240,6 +240,23 @@ namespace TTbarAnalysis
 		}
 		return vector1;
 	}
+	double * MathOperator::getVector(const std::vector< float > & direction, const float module)
+	{
+		double * result = new double[3];
+		for (int i = 0; i < 3; i++) 
+		{
+			result[i] = direction[i] * module;
+		}
+		return result;
+	}
+	double * MathOperator::vectorProduct(const double * v1, const double * v2)
+	{	
+		double * result = new double[3];
+		result[0] = v1[1]*v2[2]-v1[2]*v2[1];
+		result[1] = v1[2]*v2[0]-v1[0]*v2[2];
+		result[2] = v1[0]*v2[1]-v1[1]*v2[0];
+		return result;
+	}
 
 	vector< float > * MathOperator::vectorProduct(const vector< float > & v1, const vector< float > & v2)
 	{
@@ -264,6 +281,15 @@ namespace TTbarAnalysis
 		delete product;
 		return result;
 	}
+	float MathOperator::scalarProduct(const double * v1, const double * v2)
+	{
+		float result  = 0;
+		for (int i = 0; i < 3; i++) 
+		{
+			result +=  v1[i]* v2[i];
+		}
+		return result;
+	}
 
 	float MathOperator::getDistanceTo(const double * vectorPoint1, vector< float > & vector1,const double * point )
 	{
@@ -276,6 +302,15 @@ namespace TTbarAnalysis
 		vector< float > * product = vectorProduct(vector1,vector2);
 		result = getModule(*product)/getModule(vector1);
 		delete product;
+		return result;
+	}
+	double * MathOperator::addVectors(const double * v1, const double * v2, int factor)
+	{
+		double * result = new double[3];
+		for (int i = 0; i < 3; i++) 
+		{
+			result[i] = v1[i] + factor*v2[i];
+		}
 		return result;
 	}
 
@@ -366,6 +401,29 @@ namespace TTbarAnalysis
 		}
 		return result;
 	}
+	float MathOperator::phiToPhi0(float phi)
+	{
+		float semi = 1.5708;
+		float pi = 2*semi;
+		if (phi > 0 && phi < semi) 
+		{
+			return phi;
+		}
+		if (phi > semi && phi < pi) 
+		{
+			return 3*semi - phi;
+		}
+		if (phi > pi && phi < 3*semi) 
+		{
+			return -2*pi+phi;
+		}
+		if (phi > 3*semi && phi < 2*pi) 
+		{
+			return 3*semi - phi;
+		}
+		return -10.;
+
+	}
 	vector< int > * MathOperator::getPoint(int x, int y, int z)
 	{
 		vector< int > * point = new vector< int >();
@@ -377,6 +435,22 @@ namespace TTbarAnalysis
 	float MathOperator::getPt(const double * momentum)
 	{
 		return std::sqrt(momentum[0] * momentum[0] + momentum[1] * momentum[1]);
+	}
+	double * MathOperator::getPtOnVector(const double * momentum, const double * target)
+	{
+		vector< float > direction = getDirection(target);
+		double * pt = new double[3];
+		double product = 0.0;
+		for (int i = 0; i < 3; i++) 
+		{
+			product += momentum[i] * direction[i];
+		}
+		for (int i = 0; i < 3; i++) 
+		{
+			pt[i] = momentum[i] - direction[i] * product;
+		}
+		//std::cout << "P: " << getModule(momentum) << " Pl: " << product << " |Pt|: " << getModule(pt) << '\n';
+		return pt;
 	}
 	double * MathOperator::getPtOnVector(const double * momentum, const float * target)
 	{

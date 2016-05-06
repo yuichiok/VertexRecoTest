@@ -35,7 +35,10 @@ namespace TTbarAnalysis
 			static float getDistance(const double * start, const double * end);
 			static float getDistance(const float * start, const float * end);
 			static std::vector< float > * vectorProduct(const std::vector< float > & v1,const std::vector< float > & v2);
-			
+			static double * vectorProduct(const double * v1, const double * v2);
+			static float scalarProduct(const double * v1, const double * v2);
+			static float phiToPhi0(float phi);
+
 			static float getDistanceBtw(const double * vectorPoint1, std::vector< float > & vectorDirection1,const double * vectorPoint2, std::vector< float > & vectorDirection2 );
 			
 			static float getDistanceTo(const std::vector< int > & vectorPoint1,const std::vector< float > & vector1, const std::vector< int > * pointOfLine );
@@ -44,9 +47,12 @@ namespace TTbarAnalysis
 			static std::vector< float > getDirection(std::vector< int > & vectorPoint1, std::vector< int > & vectorPoint2);
 			static std::vector< float > getDirection(const double * vectorPoint1, const double * vectorPoint2);
 			static std::vector< float > getDirection(const double * vectorPoint);
+			static double * addVectors(const double * v1, const double * v2, int factor = 1);
+			static double * getVector(const std::vector< float > & direction, const float module);
 			static std::vector< std::vector< int > * > * GetMagicNumbers();
 			static std::vector< int > * getPoint(int x, int y, int z);
 			static double * getPtOnVector(const double * momentum, const float * target);
+			static double * getPtOnVector(const double * momentum, const double * target);
 			static float getPt(const double * momentum);
 			static double getMissingPt(std::vector< const double * > & vectors, const float * target);
 			static double * toDoubleArray(const float * target, int size);

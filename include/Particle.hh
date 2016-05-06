@@ -56,12 +56,15 @@ namespace TTbarAnalysis
 			EVENT::MCParticle * GetMCParticle();
 			void SetMCParticle(EVENT::MCParticle * value);
 
+			EVENT::ReconstructedParticle * GetRecoParticle();
+			void SetRecoParticle(EVENT::ReconstructedParticle * particle);
 			void Assign(EVENT::ReconstructedParticle * initial);
 		private:
 		//
 		//	Data
 		//
 			double * myMomentum;
+			EVENT::ReconstructedParticle * myRecoParticle;
 			EVENT::MCParticle * myMCParticle;
 			EVENT::Vertex * myVertex;
 			float myOffset;

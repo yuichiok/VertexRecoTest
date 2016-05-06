@@ -88,7 +88,41 @@ namespace TTbarAnalysis
 		}
 		return false;
 	}
-	vector< MCParticle * > ParticleOperator::GetMCParticlesRel(const vector< ReconstructedParticle * > & secondaries, LCCollection * rel)
+	MCParticle * ParticleOperator::GetMCParticleTrackRel(const ReconstructedParticle * secondary, LCCollection * trackrel)
+	{
+		LCRelationNavigator navigator(trackrel);
+		MCParticle * mcparticle = NULL;
+		if (std::abs(secondary->getCharge()) < 0.1)
+		{
+			return mcparticle;
+		}
+		Track * reco = secondary->getTracks()[0];
+		vector< LCObject * > obj = navigator.getRelatedToObjects(reco);
+		vector< float > weights = navigator.getRelatedToWeights(reco);
+		if (obj.size() < 1) 
+		{
+			std::cout << "ERROR: no Track truthlink for particle either\n";
+			return mcparticle;
+		}
+		float maxweight = 0.5;
+		for (int i = 0; i < obj.size(); i++) 
+		{
+			MCParticle * candidate = dynamic_cast< MCParticle * >(obj[i]);
+			if (std::abs(candidate->getCharge()) < 0.09) 
+			{
+				std::cout << "WARNING: neutral truthlink for particle\n";
+				continue;
+			}
+			if (weights[i] > maxweight) 
+			{
+				maxweight = weights[i];
+				mcparticle = candidate;
+			}
+		}
+		return mcparticle;
+
+	}
+	vector< MCParticle * > ParticleOperator::GetMCParticlesRel(const vector< ReconstructedParticle * > & secondaries, LCCollection * rel, LCCollection * trackrel)
 	{
 		LCRelationNavigator navigator(rel);
 		vector< MCParticle * > result;
@@ -103,7 +137,12 @@ namespace TTbarAnalysis
 			vector< float > weights = navigator.getRelatedToWeights(reco);
 			if (obj.size() < 1) 
 			{
-				std::cout << "ERROR: no truthlink for particle here\n";
+				std::cout << "ERROR: no PFO truthlink for particle here\n";
+				MCParticle * candidate = GetMCParticleTrackRel(reco, trackrel);
+				if (candidate) 
+				{
+					result.push_back(candidate);
+				}
 				continue;
 			}
 

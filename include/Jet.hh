@@ -39,19 +39,26 @@ namespace TTbarAnalysis
 			float GetHadronCharge();
 			float GetHadronMomentum();
 			float GetHadronMass();
+			float GetHadronCostheta();
 			float GetHadronDistance();
+			float GetMinVtxProbability();
+			float GetMaxVtxChi2();
+			int __GetGenNumberOfVertexParticles();
+			int __GetGenCharge();
 			const double * GetMomentum();
 			int GetMCPDG();
 			void SetMCPDG(int pdg);
 			const std::vector< EVENT::ReconstructedParticle * > * GetParticles() const;
 			void SetParticles(const std::vector< EVENT::ReconstructedParticle * > & particles);
-			
+			float GetTagAngle();
+			void SetTagAngle(float a);
 		private:
 		//
 		//	Data
 		//
 			 float myBTag;
 			 float myCTag;
+			 float myTagAngle;
 			 int myNumber;
 			 int myMCPDG;
 			 std::vector< VertexTag * > myVertexTags;

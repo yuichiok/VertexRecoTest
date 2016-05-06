@@ -20,6 +20,7 @@ namespace TTbarAnalysis
 		myHits[2] = -1;
 		myHits[3] = -1;
 		myMCParticle = NULL;
+		myRecoParticle = NULL;
 	}
 	double * Particle::GetMomentum()
 	{
@@ -139,6 +140,14 @@ namespace TTbarAnalysis
 	void Particle::SetVertexAngle(float value)
 	{
 		myVertexAngle = value;
+	}
+	ReconstructedParticle * Particle::GetRecoParticle()
+	{
+		return myRecoParticle;
+	}
+	void Particle::SetRecoParticle(ReconstructedParticle * particle)
+	{
+		myRecoParticle = particle;
 	}
 	
 	void Particle::Assign(ReconstructedParticle * initial)

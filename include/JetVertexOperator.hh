@@ -9,6 +9,7 @@
 #include <UTIL/PIDHandler.h>
 #include <UTIL/LCRelationNavigator.h>
 #include "MathOperator.hh"
+#include "TrackOperator.hh"
 #include "ParticleOperator.hh"
 #include "VertexTag.hh"
 #include "Particle.hh"
@@ -27,7 +28,7 @@ namespace TTbarAnalysis
 		//
 		//	Constructors
 		//
-			JetVertexOperator (EVENT::LCCollection * pfo , EVENT::LCCollection * egprongs);
+			JetVertexOperator (EVENT::LCCollection * pfo , EVENT::LCCollection * egprongs, EVENT::LCCollection * trackrel = NULL);
 			virtual ~JetVertexOperator () {};
 		//
 		//	Methods
@@ -49,6 +50,7 @@ namespace TTbarAnalysis
 		//
 			std::string myAlgorithmName;
 			EVENT::LCCollection * myPFO;
+			EVENT::LCCollection * myTrackRel;
 			EVENT::LCCollection * myEGProngs;
 			float myAngleCut;
 			double ip[3];

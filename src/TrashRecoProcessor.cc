@@ -88,6 +88,12 @@ namespace TTbarAnalysis
 		_colTrackRelName,
 	    	std::string("MarlinTrkTracksMCTruthLink")
 	    );
+	    registerInputCollection( LCIO::VERTEX,
+	    	"MCVertexCollectionName",
+		"Name of the MCVertex collection",
+		_colMCName,
+	    	std::string("MCVertex")
+	    );
 	    _angleAcceptance = 0.2;
 	    registerProcessorParameter("angleAcceptance",
 	    	"Angle cut for truth tagging verticies by direction",
@@ -122,6 +128,12 @@ namespace TTbarAnalysis
 		_colRecoProngsTracksName,
 	    	std::string("RecoProngsTracks")
 	    );
+		_hfilename = "RecoTest.root";
+	    registerProcessorParameter("ROOTFileName" , 
+	            "ROOT File Name"  ,
+        	    _hfilename,
+           	 _hfilename
+	    );
 
 	}
 	
@@ -138,7 +150,6 @@ namespace TTbarAnalysis
 		_numberMissed2 = 0;
 		_nRun = 0 ;
 		_nEvt = 0 ;
-		_hfilename = "TrashRecoTest.root";
 		_hfile = new TFile( _hfilename.c_str(), "RECREATE", _hfilename.c_str() ) ;
 		_hTree = new TTree( "Stats", "My vertex tree!" );
 		_hTree->Branch("numberOfTagged", &_numberOfTagged, "numberOfTagged/I");
@@ -146,16 +157,16 @@ namespace TTbarAnalysis
 		_hTree->Branch("numberOfTernary", &_numberOfTernary, "numberOfTernary/I");
 		_hTree->Branch("numberOfSecondary", &_numberOfSecondary, "numberOfSecondary/I");
 		_hTree->Branch("numberOfUnknown", &_numberOfUnknown, "numberOfUnknown/I");
-		_hTree->Branch("bexists", &_bexists, "bexists/I");
-		_hTree->Branch("bbarexists", &_bbarexists, "bbarexists/I");
+		_hTree->Branch("bnvtx", &_bnvtx, "bnvtx/I");
+		_hTree->Branch("bbarnvtx", &_bbarnvtx, "bbarnvtx/I");
 		_hTree->Branch("bnumber", &_bnumber1, "bnumber1/I");
 		_hTree->Branch("bbarnumber", &_bbarnumber1, "bbarnumber1/I");
 		_hTree->Branch("bcharge", &_bcharge, "bcharge/I");
 		_hTree->Branch("bbarcharge", &_bbarcharge, "bbarcharge/I");
 		_hTree->Branch("bnoffsettracks", &_bnoffsettracks, "bbnoffsettracks/I");
 		_hTree->Branch("bbarnoffsettracks", &_bbarnoffsettracks, "bbarnoffsettracks/I");
-		_hTree->Branch("bteta", &_bteta, "bteta/F");
-		_hTree->Branch("bbarteta", &_bbarteta, "bbarteta/F");
+		_hTree->Branch("bcostheta", &_bcostheta, "bcostheta/F");
+		_hTree->Branch("bbarcostheta", &_bbarcostheta, "bbarcostheta/F");
 		_hTree->Branch("btag", &_btag, "btag/F");
 		_hTree->Branch("bmass", &_bmass, "bmass/F");
 		_hTree->Branch("bbartag", &_bbartag, "bbartag/F");
@@ -170,6 +181,10 @@ namespace TTbarAnalysis
 		_hTree->Branch("bprobmean", &_bprobmean, "bprobmean/F");
 		_hTree->Branch("bbarchimean", &_bbarchimean, "bbarchimean/F");
 		_hTree->Branch("bchimean", &_bchimean, "bchimean/F");
+		_hTree->Branch("__bgennumber", &_bgennumber, "__bgennumber/I");
+		_hTree->Branch("__bbargennumber", &_bbargennumber, "__bbargennumber/I");
+		_hTree->Branch("__bgencharge", &_bgencharge, "bgencharge/I");
+		_hTree->Branch("__bbargencharge", &_bbargencharge, "bbargencharge/I");
 		//_hTree->Branch("numberOfDistances", &_numberOfDistances, "numberOfDistances/I");
 		//_hTree->Branch("distances", _distances, "distances[numberOfDistances]/F");
 		_hTaggedTree = new TTree( "TaggedVertices", "My vertex tree!" );
@@ -179,8 +194,10 @@ namespace TTbarAnalysis
 		_hTaggedTree->Branch("precisionT", _precisionT, "precisionT[numberOfTagged]/F");
 		//_hTaggedTree->Branch("mindistance", _mindistance, "mindistance[numberOfTagged]/F");
 		_hTaggedTree->Branch("angle", _angle, "angle[numberOfTagged]/F");
+		_hTaggedTree->Branch("costhetaVtx", _costhetaVtx, "costhetaVtx[numberOfTagged]/F");
 		_hTaggedTree->Branch("probability", _probability, "probability[numberOfTagged]/F");
 		_hTaggedTree->Branch("chi2", _chi2, "chi2[numberOfTagged]/F");
+		_hTaggedTree->Branch("status", _status, "status[numberOfTagged]/I");
 		_hTaggedTree->Branch("distanceIP", _distanceIP, "distanceIP[numberOfTagged]/F");
 		_hTaggedTree->Branch("coordinates", _coordinates, "coordinates[numberOfTagged][3]/F");
 		_hTaggedTree->Branch("PDG", _PDG, "PDG[numberOfTagged]/I");
@@ -192,14 +209,30 @@ namespace TTbarAnalysis
 		_hTaggedTree->Branch("momentumOfParticles", _momentumOfParticles, "momentumOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("typeOfParticles", _typeOfParticles, "typeOfParticles[numberOfTagged][15]/I");
 		_hTaggedTree->Branch("costhetaOfParticles", _costhetaOfParticles, "costhetaOfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("phiOfParticles", _phiOfParticles, "phiOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("thetaOfParticles", _thetaOfParticles, "thetaOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("chi2OfParticles", _chi2OfParticles, "chi2OfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("rHitOfParticles", _rHitOfParticles, "rHitOfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("deltapOfParticles", _deltapOfParticles, "deltapOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("offsetOfParticles", _offsetOfParticles, "offsetOfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("deviationOfParticles", _deviationOfParticles, "deviationOfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("errorOfParticles", _errorOfParticles, "errorOfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("angleOfParticles", _angleOfParticles, "angleOfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("deltaStartOfParticles", _deltaStartOfParticles, "deltaStartOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("vtxHitsOfParticles", _vtxHitsOfParticles, "vtxHitsOfParticles[numberOfTagged][15]/I");
 		_hTaggedTree->Branch("tpcHitsOfParticles", _tpcHitsOfParticles, "tpcHitsOfParticles[numberOfTagged][15]/I");
 		_hTaggedTree->Branch("ftdHitsOfParticles", _ftdHitsOfParticles, "ftdHitsOfParticles[numberOfTagged][15]/I");
 		_hTaggedTree->Branch("sitHitsOfParticles", _sitHitsOfParticles, "sitHitsOfParticles[numberOfTagged][15]/I");
+		_hTaggedTree->Branch("isProngOfParticles", _isProngOfParticles, "isProngOfParticles[numberOfTagged][15]/I");
+		_hTaggedTree->Branch("dEdxOfParticles", _dEdxOfParticles, "dEdxOfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("errordEdxOfParticles", _errordEdxOfParticles, "errordEdxOfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("trueTypeOfParticles", _trueTypeOfParticles, "trueTypeOfParticles[numberOfTagged][15]/I");
 		_hTaggedTree->Branch("ptOfParticles", _ptOfParticles, "ptOfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("phi0OfParticles", _phi0OfParticles, "phi0OfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("z0OfParticles", _z0OfParticles, "z0OfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("d0OfParticles", _d0OfParticles, "d0OfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("z0PrimeOfParticles", _z0PrimeOfParticles, "z0PrimeOfParticles[numberOfTagged][15]/F");
+		_hTaggedTree->Branch("d0PrimeOfParticles", _d0PrimeOfParticles, "d0PrimeOfParticles[numberOfTagged][15]/F");
 	/*	
 		_hUntaggedTree = new TTree( "UntaggedVertices", "My vertex tree!" );
 		_hUntaggedTree->Branch("numberOfUnknown", &_numberOfUnknown, "numberOfUnknown/I");
@@ -221,8 +254,10 @@ namespace TTbarAnalysis
 		_hJetTree->Branch("mcpdg", _mcpdg, "mcpdg[numberOfJets]/I");
 		_hJetTree->Branch("maxalphaJetParticles", _maxalphaJetParticles, "maxalphaJetParticles[numberOfJets]/F");
 		_hJetTree->Branch("vtxAngleJetAxis", _vtxAngleJetAxis, "vtxAngleJetAxis[numberOfJets]/F");
+		_hJetTree->Branch("tagAngleJetAxis", _tagAngleJetAxis, "tagAngleJetAxis[numberOfJets]/F");
 		_hJetTree->Branch("nJetParticles", _nJetParticles, "nJetParticles[numberOfJets]/I");
 		_hJetTree->Branch("pJetParticles", _pJetParticles, "pJetParticles[numberOfJets][100]/F");
+		_hJetTree->Branch("zJetParticles", _zJetParticles, "zJetParticles[numberOfJets][100]/F");
 		_hJetTree->Branch("costhetaJetParticles", _costhetaJetParticles, "costhetaJetParticles[numberOfJets][100]/F");
 		_hJetTree->Branch("alphaJetParticles", _alphaJetParticles, "alphaJetParticles[numberOfJets][100]/F");
 		_hJetTree->Branch("typeJetParticles", _typeJetParticles, "typeJetParticles[numberOfJets][100]/I");
@@ -232,6 +267,7 @@ namespace TTbarAnalysis
 		_hMissedTree = new TTree( "MissedTracks", "My vertex tree!" );
 		_hMissedTree->Branch("numberOfMissed", &_numberOfMissed, "numberOfMissed/I");
 		_hMissedTree->Branch("offsetMissed", _offsetMissed, "offsetMissed[numberOfMissed]/F");
+		_hMissedTree->Branch("errorMissed", _errorMissed, "errorMissed[numberOfMissed]/F");
 		_hMissedTree->Branch("deviationMissed", _deviationMissed, "deviationMissed[numberOfMissed]/F");
 		_hMissedTree->Branch("momentumMissed", _momentumMissed, "momentumMissed[numberOfMissed]/F");
 		_hMissedTree->Branch("thetaMissed", _thetaMissed, "thetaMissed[numberOfMissed]/F");
@@ -249,9 +285,14 @@ namespace TTbarAnalysis
 		_hMissedTree->Branch("sitHitsMissed", _sitHitsMissed, "sitHitsMissed[numberOfMissed]/I");
 		_hMissedTree->Branch("interactedMissed", _interactedMissed, "interactedMissed[numberOfMissed]/I");
 		_hMissedTree->Branch("genMissed", _genMissed, "genMissed[numberOfMissed]/I");
+		_hMissedTree->Branch("deltapMissed", _deltapMissed, "deltapMissed[numberOfMissed]/F");
+		_hMissedTree->Branch("realoffsetMissed", _realoffsetMissed, "realoffsetMissed[numberOfMissed]/F");
+		_hMissedTree->Branch("sigmaAngleMissed", _sigmaAngleMissed, "sigmaAngleMissed[numberOfMissed]/F");
 		_hMissedTree->Branch("truthAngleMissed", _truthAngleMissed, "truthAngleMissed[numberOfMissed]/F");
 		_hMissedTree->Branch("vertexAngleMissed", _vertexAngleMissed, "vertexAngleMissed[numberOfMissed]/F");
 		_hMissedTree->Branch("costhetaMissed", _costhetaMissed, "costhetaMissed[numberOfMissed]/F");
+		_hMissedTree->Branch("d0Missed", _d0Missed, "d0Missed[numberOfMissed]/F");
+		_hMissedTree->Branch("z0Missed", _z0Missed, "z0Missed[numberOfMissed]/F");
 		_hMissedTree->Branch("distanceIPMissed", _distanceIPMissed, "distanceIPMissed[numberOfMissed]/F");
 		_hMissedTree->Branch("btagMissed", _btagMissed, "btagMissed[numberOfMissed]/F");
 
@@ -299,14 +340,26 @@ namespace TTbarAnalysis
 		{
 			return;
 		}
+		int vtxhits = 0;
+		int tpchits = 0;
+		int ftdhits = 0;
 		std::cout << std::fixed << std::setw( 6 ) << std::setprecision( 3 ) << std::setfill( ' ' );
 		int id = 0;
+		if (abs(particle->getCharge()) > 0.5) 
+		{
+			vtxhits =  particle->getTracks()[0]->getSubdetectorHitNumbers()[0];
+			tpchits =  particle->getTracks()[0]->getSubdetectorHitNumbers()[6];
+			ftdhits =  particle->getTracks()[0]->getSubdetectorHitNumbers()[5];
+		}
 		if (particle->getParticleIDUsed()) 
 		{
 			std::cout << "Type " << particle->getParticleIDUsed()->getType() << '\n';
 			id = particle->getParticleIDs()[0]->getPDG(); 
 		}
-		std::cout<<"|"<< id <<"\t\t|"<<particle->getType()<<"\t\t|"<<particle->getCharge()  <<"\t\t|"<<particle->getEnergy() <<"\t\t|\n";
+		vector<float> direction = MathOperator::getDirection(particle->getMomentum());
+		float costheta = std::cos(MathOperator::getAngles(direction)[1]);
+		std::cout<<"|"<<vtxhits << ":" <<ftdhits<< ":" <<tpchits<<"\t\t|"<<particle->getMass()<<"\t\t|"<<particle->getCharge() <<"\t\t|"<< costheta <<"\t\t|"<<particle->getEnergy() <<"\t\t|\n";
+		//std::cout<<"|"<< id <<"\t\t|"<<particle->getType()<<"\t\t|"<<particle->getCharge()  <<"\t\t|"<<particle->getEnergy() <<"\t\t|\n";
 	
 	}
 	void TrashRecoProcessor::AnalyseSecondaries(const LCCollection * prongs, const LCCollection * rel, const LCCollection * reco)
@@ -366,16 +419,23 @@ namespace TTbarAnalysis
 			LCCollection* mc = evt->getCollection( _colMCName );
 			LCCollection* egprongs = evt->getCollection( _colProngsName );
 			LCCollection* truthrel = evt->getCollection( _colRelName );
+			LCCollection* truthtrackrel = evt->getCollection( _colTrackRelName );
+			myTrackRel = truthtrackrel;
 			LCCollection* quarks = evt->getCollection( _colquarkName );
 			int number = col->getNumberOfElements();
 			_numberOfTotal = number;
 			_primary = FindPrimaryVertex( evt->getCollection( _colPriName ));
-			
+			myGenProngs.clear();
+			for (int i = 0; i < egprongs->getNumberOfElements(); i++) 
+			{
+				MCParticle * prong = dynamic_cast< MCParticle * >(egprongs->getElementAt(i));
+				myGenProngs.push_back(prong);
+			}
 			LCCollection* jets = evt->getCollection( _colJetsName );
 			LCCollection* rel = evt->getCollection( _colJetsRelName );
 			_numberIncoming += egprongs->getNumberOfElements();
 			//AnalyseSecondaries(evt->getCollection(_colProngsName),evt->getCollection(_colRelName),col);
-			JetVertexOperator jetvertex(evt->getCollection(_colPFOName), egprongs);
+			JetVertexOperator jetvertex(evt->getCollection(_colPFOName), egprongs, truthtrackrel);
 			JetOperator jetOperator(0.1 , "lcfiplus");
 
 			vector< Jet * > * nextjets = jetvertex.TagJets(jets, mc, rel);
@@ -517,20 +577,32 @@ namespace TTbarAnalysis
 		IMPL::LCCollectionVec * mcmissed = new IMPL::LCCollectionVec ( LCIO::MCPARTICLE);
 		mcmissed->setSubset();
 		LCCollection* trackrel = evt->getCollection( _colTrackRelName );
-		
+		TrackOperator trkOp;
 		_numberOfMissed = missed->size();
 		for (unsigned int i = 0; i < missed->size(); i++) 
 		{
 			if (recomissed) 
 			{
 				reco->addElement(new ReconstructedParticleImpl((ReconstructedParticleImpl&)(*recomissed->at(i))));
-				mcmissed->addElement(missed->at(i).GetMCParticle());
+					mcmissed->addElement(missed->at(i).GetMCParticle());
 
 			}
 			vector<float> direction = MathOperator::getDirection(missed->at(i).GetMomentum());
 			_momentumMissed[i] = MathOperator::getModule(missed->at(i).GetMomentum());
 			_offsetMissed[i] = missed->at(i).GetOffset();
-			_deviationMissed[i] = _offsetMissed[i] / ParticleOperator::GetError(recomissed->at(i));
+			_errorMissed[i] = trkOp.GetOffsetErrorSimple(missed->at(i).GetRecoParticle());
+			/*if (missed->at(i).GetRecoParticle()) 
+			{
+				double offset = _offsetMissed[i];
+				double * position = trkOp.GetStartPoint(missed->at(i).GetRecoParticle());
+				_deviationMissed[i] = _offsetMissed[i] / std::sqrt(trkOp.GetOffsetError(missed->at(i).GetRecoParticle(),position ,_primary, offset));
+			}
+			else 
+			{
+				_deviationMissed[i] = -1.;
+			}*/
+			_deviationMissed[i] = (missed->at(i).GetRecoParticle())?  trkOp.GetOffsetSignificance(missed->at(i).GetRecoParticle()):-1;
+			//_deviationMissed[i] = _offsetMissed[i] / ParticleOperator::GetError(recomissed->at(i));
 			_thetaMissed[i] = missed->at(i).GetTheta();
 			_phiMissed[i] = MathOperator::getAngles(direction)[0];
 			_chargeMissed[i] = missed->at(i).GetMCParticle()->getCharge();
@@ -548,12 +620,28 @@ namespace TTbarAnalysis
 			_genMissed[i] = missed->at(i).GetGeneration();
 			_truthAngleMissed[i] = missed->at(i).GetTruthAngle();
 			_vertexAngleMissed[i] = missed->at(i).GetVertexAngle();
+			if (_vertexAngleMissed[i] > 0.05) 
+			{
+				std::cout << "WARNING: Vtx angle is " << _vertexAngleMissed[i] << "\n";
+			}
 			Track * track = ParticleOperator::GetTrackRel(missed->at(i).GetMCParticle(), trackrel);
 			_hastrackMissed[i] = (track)? 1 : 0;
 			_omegatrackMissed[i] = (track)? track->getOmega() : 0;
 			_distanceIPMissed[i] =  MathOperator::getModule(missed->at(i).GetMCParticle()->getVertex());
+			_deltapMissed[i] = GetDeltaP(missed->at(i).GetRecoParticle());
+			if (missed->at(i).GetRecoParticle() && missed->at(i).GetRecoParticle()->getTracks().size() > 0 ) 
+			{
+				//float radius = std::abs(1. / track->getTracks()[0]->getOmega());
+				//_sigmaAngleMissed[i] = std::atan((radius - std::sqrt(radius*radius - _distanceIPMissed[i]*_distanceIPMissed[i])) /_distanceIPMissed[i]);
+				double * start = trkOp.GetStartPoint(missed->at(i).GetRecoParticle());
+				double * pos = MathOperator::toDoubleArray(_primary->getPosition(), 3);
+				//_realoffsetMissed[i] = trkOp.GetOffset(missed->at(i).GetRecoParticle());
+				_realoffsetMissed[i] = MathOperator::getDistanceTo(start, direction, pos);
+			}
 			if (_isrecoMissed[i] == 0 && _hastrackMissed[i] == 1) 
 			{
+				_d0Missed[i] = track->getD0();
+				_z0Missed[i] = track->getZ0();
 				_vtxHitsMissed[i] = track->getSubdetectorHitNumbers()[0];
 				_tpcHitsMissed[i] = track->getSubdetectorHitNumbers()[6];
 				_ftdHitsMissed[i] = track->getSubdetectorHitNumbers()[4];
@@ -629,6 +717,7 @@ namespace TTbarAnalysis
 		for (unsigned int i = 0; i < jets->size(); i++) 
 		{
 			const vector< VertexTag * > tagged = jets->at(i)->GetVertexTags();
+			//GetBAngles(tagged);
 			Jet * jet = jets->at(i);
 			int noffset = getTracksWithOffsets(jet);
 			if (jet->GetMCPDG() > 0) 
@@ -640,6 +729,13 @@ namespace TTbarAnalysis
 				_btag = jet->GetBTag();
 				_bmass = jet->GetHadronMass();
 				_bIPdistance = jet->GetHadronDistance();
+				_bcostheta = jet->GetHadronCostheta();
+				_bnvtx = jet->GetNumberOfVertices();
+				_bgennumber = jet->__GetGenNumberOfVertexParticles();
+				_bgencharge =  jet->__GetGenCharge();
+				_bptmiss = getMissingPt(tagged, 5);
+				_bprobmean = jet->GetMinVtxProbability();
+				_bchimean = jet->GetMaxVtxChi2();
 			}
 			if (jet->GetMCPDG() < 0) 
 			{
@@ -650,6 +746,13 @@ namespace TTbarAnalysis
 				_bbartag = jet->GetBTag();
 				_bbarmass = jet->GetHadronMass();
 				_bbarIPdistance = jet->GetHadronDistance();
+				_bbarcostheta = jet->GetHadronCostheta();
+				_bbarnvtx = jet->GetNumberOfVertices();
+				_bbargennumber = jet->__GetGenNumberOfVertexParticles();
+				_bbargencharge =  jet->__GetGenCharge();
+				_bbarptmiss = getMissingPt(tagged, 5);
+				_bbarprobmean = jet->GetMinVtxProbability();
+				_bbarchimean = jet->GetMaxVtxChi2();
 			}
 			WriteVertex(jet->GetVertexTags(), reco);
 			std::cout << "Printing vertices with PDG " << jet->GetMCPDG() << ":\n";
@@ -674,10 +777,37 @@ namespace TTbarAnalysis
 		std::cout << "Total bnumber: " << _bnumber1 << "\nTotal bbarnumber: "<< _bbarnumber1 << "\n";
 		return reco;
 	}
+	float TrashRecoProcessor::GetDeltaP(ReconstructedParticle * particle)
+	{
+		if (!particle || particle->getTracks().size() < 1) 
+		{
+			return -1.;
+		}
+		vector<float> covMatrix(10);
+		AlgebraImplementation::GetCovMatrixMomenta(particle, covMatrix);
+		/*for (int i = 0; i < covMatrix->size(); i++) 
+		{
+			std::cout << "Matrix " << i << " " << covMatrix->at(i) * 1000000 << "\n";
+		}*/
+		float sum = 0.0;
+		const double * p = particle->getMomentum();
+		//sum += std::pow(covMatrix[0]*p[0] + covMatrix[1]*p[0] + covMatrix[3]*p[0], 2);
+		//sum += std::pow(covMatrix[1]*p[1] + covMatrix[2]*p[1] + covMatrix[4]*p[1], 2);
+		//sum += std::pow(covMatrix[3]*p[0] + covMatrix[4]*p[0] + covMatrix[5]*p[0], 2);
+		float momentum = MathOperator::getModule(p);
+		sum += p[0]*p[0] * covMatrix[0];
+		sum += p[1]*p[1] * covMatrix[2];
+		sum += p[2]*p[2] * covMatrix[5];
+		sum += 2*p[0]*p[1] * covMatrix[1];
+		sum += 2*p[0]*p[2] * covMatrix[3];
+		sum += 2*p[1]*p[2] * covMatrix[4];
+		return std::sqrt(sum) / momentum / momentum/ momentum;
+	}
 	int TrashRecoProcessor::getTracksWithOffsets( Jet * jet)
 	{
 		const vector< ReconstructedParticle * > * particles = jet->GetParticles();
 		int result = 0;
+		TrackOperator toperator;
 		vector< Vertex * > * vertices = jet->GetRecoVertices();
 		vector< ReconstructedParticle * > prongs;
 		for (int i = 0; i < vertices->size(); i++) 
@@ -714,7 +844,8 @@ namespace TTbarAnalysis
 				double * trackPosition = myTrackOperator.GetStartPoint(particle);
 				vector<float> direction = MathOperator::getDirection(particle->getMomentum());
 				float offset = MathOperator::getDistanceTo(primaryPosition, direction, trackPosition);
-				float accuracy = ParticleOperator::GetError(particle);
+				float accuracy = toperator.GetOffsetErrorSimple(particle);
+				//float accuracy = ParticleOperator::GetError(particle);
 				float angle = MathOperator::getAngle(particle->getMomentum(), jet->GetMomentum());
 				float p =  MathOperator::getModule(particle->getMomentum());
 				if (offset / accuracy > 5 && angle < anglecut && p > .50) //std::sqrt(angle) * 15.0 + 1.0
@@ -747,6 +878,8 @@ namespace TTbarAnalysis
 		_bnumber1 = 0;
 		_bcharge = 0;
 		_bbarcharge = 0;
+		_bgennumber = 0;
+		_bbargennumber = 0;
 		int nbvtx = 0;
 		int nbbarvtx = 0;
 		for (int i = 0; i < _numberOfTagged; i++) 
@@ -770,9 +903,11 @@ namespace TTbarAnalysis
 			//Write(tagged->at(i), i);
 			float distance = MathOperator::getDistance(tagged->at(i)->GetVertex()->getPosition(), _primary->getPosition());
 			int particleNumber  = particle->getParticles().size();
+			int particleGenNumber = tagged->at(i)->__GetMCTrackNumber();
 			if (tagged->at(i)->GetInitialPDG()  == -5) 
 			{
 				nbbarvtx++;
+				_bbargennumber += particleGenNumber;
 				_bbarchimean += tagged->at(i)->GetVertex()->getChi2();
 				_bbarprobmean += tagged->at(i)->GetVertex()->getProbability();
 				_bbarmomentum += MathOperator::getModule(particle->getMomentum());
@@ -790,6 +925,7 @@ namespace TTbarAnalysis
 			if (tagged->at(i)->GetInitialPDG() == 5) 
 			{
 				nbvtx++;
+				_bgennumber += particleGenNumber;
 				_bchimean += tagged->at(i)->GetVertex()->getChi2();
 				_bprobmean += tagged->at(i)->GetVertex()->getProbability();
 				_bmomentum += MathOperator::getModule(particle->getMomentum());
@@ -810,11 +946,11 @@ namespace TTbarAnalysis
 		_bchimean = (nbvtx > 0)? _bchimean / (float) nbvtx : -1.0;
 		_bprobmean = (nbvtx > 0)? _bprobmean / (float) nbvtx : -1.0;
 
-		_bexists = (_bnumber1 > 0)?1:0;
-		_bbarexists = (_bbarnumber1 > 0)?1:0;
-		_bptmiss = getMissingPt(btracks, tagged, 5);
-		_bbarptmiss = getMissingPt(bbartracks, tagged, -5);
-		GetBAngles(tagged);
+		_bnvtx = (_bnumber1 > 0)?1:0;
+		_bbarnvtx = (_bbarnumber1 > 0)?1:0;
+		//_bptmiss = getMissingPt(btracks, tagged, 5);
+		//_bbarptmiss = getMissingPt(bbartracks, tagged, -5);
+		//GetBAngles(tagged);
 		std::cout << "Total b multiplicity: " << _bnumber1 << ", total bbar multiplicity: " << _bbarnumber1 << '\n';
 		std::cout << "Missing pt b : " << _bptmiss << ", Missing pt bbar: " << _bbarptmiss << '\n';
 
@@ -832,20 +968,21 @@ namespace TTbarAnalysis
 		evt->addCollection(reco, _colTagName);
 	}
 
-	void TrashRecoProcessor::GetBAngles(vector< VertexTag * > * tags)
+	void TrashRecoProcessor::GetBAngles(const vector< VertexTag * > & tags)
 	{
-		for (unsigned int i = 0; i < tags->size(); i++) 
+		//for (unsigned int i = 0; i < tags->size(); i++) 
+		if (tags.size() > 0 && tags[0])
 		{
-			 VertexTag * tag = tags->at(i);
+			 VertexTag * tag = tags.at(0);
 			 const double * vertex = MathOperator::toDoubleArray(tag->GetVertex()->getPosition(),3); 
 			 vector< float > direction = MathOperator::getDirection(vertex);
-			 if (tag->GetInitialPDG() > 0 && _bteta  < 0.0) 
+			 if (tag->GetInitialPDG() > 0) 
 			 {
-			 	_bteta = MathOperator::getAngles(direction)[1];
+			 	_bcostheta = std::cos(MathOperator::getAngles(direction)[1]);
 			 }
-			 if (tag->GetInitialPDG() < 0 && _bbarteta  < 0.0) 
+			 if (tag->GetInitialPDG() < 0) 
 			 {
-			 	_bbarteta = MathOperator::getAngles(direction)[1];
+			 	_bbarcostheta = std::cos( MathOperator::getAngles(direction)[1]);
 			 }
 		}
 	}
@@ -869,6 +1006,7 @@ namespace TTbarAnalysis
 			{
 				_vtxAngleJetAxis[i] = -1.0;
 			}
+			_tagAngleJetAxis[i] = jets->at(i)->GetTagAngle();
 			vector< MCParticle * > mcparticles = ParticleOperator::GetMCParticlesRel(*(jets->at(i)->GetParticles()), rel);
 			int count = 0;
 			std::cout << "Jet btag: "<< _btags[i] << "\n";
@@ -884,6 +1022,7 @@ namespace TTbarAnalysis
 				vector<float> direction =  MathOperator::getDirection(particle->getMomentum()); 
 				_costhetaJetParticles[i][j] = std::cos(MathOperator::getAngles(direction)[1]);
 				_pJetParticles[i][j] = MathOperator::getModule(particle->getMomentum());
+				_zJetParticles[i][j] = MathOperator::getModule(particle->getMomentum()) / MathOperator::getModule(jets->at(i)->GetMomentum());
 				_typeJetParticles[i][j] = abs(particle->getType());
 				_alphaJetParticles[i][j] = MathOperator::getAngleBtw(jets->at(i)->GetMomentum(),particle->getMomentum());
 				_maxalphaJetParticles[i] = (_alphaJetParticles[i][j] > _maxalphaJetParticles[i])? _alphaJetParticles[i][j] : _maxalphaJetParticles[i];
@@ -919,13 +1058,40 @@ namespace TTbarAnalysis
 			std::cout << "Nreco: " << count << " Ngen: " << mcparticles.size() << "\n";
 		}
 	}
-	float TrashRecoProcessor::getMissingPt(vector< ReconstructedParticle * > & bdaugthers, vector< VertexTag * > * tags, int pdg)
+	float TrashRecoProcessor::getMissingPt(const vector< VertexTag * > & tags, int pdg)
 	{
-		if (bdaugthers.size() < 1 || !tags || tags->size() < 1) 
+		if (tags.size() < 1) 
 		{
 			return -1.0;
 		}
-		VertexTag * bvertex = getBvertex(tags, pdg);
+		vector< ReconstructedParticle * > bdaugthers;
+		VertexTag * bvertex = NULL;
+		for (int i = 0; i < tags.size(); i++) 
+		{
+			VertexTag * tag = tags.at(i);
+			Vertex * vertex = tags.at(i)->GetVertex();
+			if (!vertex) 
+			{
+				continue;
+			}
+			ReconstructedParticle * particle = vertex->getAssociatedParticle();
+			for (unsigned int j = 0; j < particle->getParticles().size(); j++)
+			{
+				bdaugthers.push_back(particle->getParticles()[j]);
+			}
+			if (tags.size() > 1 && tag->GetGeneration() == 2) 
+			{
+				bvertex = tag;
+			}
+			if (tags.size() == 1) 
+			{
+				bvertex = tag;
+			}
+		}
+		if (bdaugthers.size() < 1 || !bvertex) 
+		{
+			return -1.0;
+		}
 		const float * position = bvertex->GetVertex()->getPosition();
 		vector< const double * > vectors;
 		for (unsigned int i = 0; i < bdaugthers.size(); i++) 
@@ -935,26 +1101,28 @@ namespace TTbarAnalysis
 		float missing =  MathOperator::getMissingPt(vectors, position);
 		return missing;
 	}
-	VertexTag * TrashRecoProcessor::getBvertex(vector< VertexTag * > * tags, int pdg)
+	VertexTag * TrashRecoProcessor::getBvertex(const vector< VertexTag * > & tags, int pdg)
 	{
-		if (!tags || tags->size() < 1) 
+		if (tags.size() < 1) 
 		{
 			return NULL;
 		}
 		float min = 1000.0;
 		int number = -1;
-		for (unsigned int i = 0; i < tags->size(); i++) 
+		std::cout << "HERE!!!!!\n";
+		for (unsigned int i = 0; i < tags.size(); i++) 
 		{
-			double * pos = MathOperator::toDoubleArray(tags->at(i)->GetVertex()->getPosition() , 3);
+			double * pos = MathOperator::toDoubleArray(tags.at(i)->GetVertex()->getPosition() , 3);
 			float module = MathOperator::getModule(pos);
 			delete pos;
-			if (module < min && tags->at(i)->GetInitialPDG() == pdg ) 
+			if (module < min && tags.at(i)->GetInitialPDG() == pdg ) 
 			{
 				number = i;
 				min = module;
 			}
 		}
-		return tags->at(number);
+		std::cout << "HERE!!!!!\n";
+		return tags.at(number);
 	}
 	void TrashRecoProcessor::Write (Vertex * vertex)
 	{
@@ -971,22 +1139,87 @@ namespace TTbarAnalysis
 		ReconstructedParticle * particle = vertex->getAssociatedParticle();
 		_charge[_numberOfTagged] = particle->getCharge();
 		_numberOfParticles[_numberOfTagged] = particle->getParticles().size();
+		TrackOperator toperator;
 		for (unsigned int j = 0; j < particle->getParticles().size(); j++)
 		{
 			ReconstructedParticle * component = particle->getParticles()[j];
-			vector< float > directionM = MathOperator::getDirection(component->getMomentum());
-			float offset = MathOperator::getDistanceTo(ip, directionM, vertexPos);
+			const double * start = toperator.GetStartPoint(component);
 			vector<float> direction = MathOperator::getDirection(component->getMomentum());
+			float offset = MathOperator::getDistanceTo(ip, direction, start);
 			_momentumOfParticles[_numberOfTagged][j] = MathOperator::getModule( component->getMomentum());
 			_thetaOfParticles[_numberOfTagged][j] = MathOperator::getAngles( direction )[1];
 			_ptOfParticles[_numberOfTagged][j] = MathOperator::getPt(component->getMomentum());
 			_costhetaOfParticles[_numberOfTagged][j] = std::cos(_thetaOfParticles[_numberOfTagged][j]);
+			_phiOfParticles[_numberOfTagged][j] =  (MathOperator::getAngles( direction )[0]);
 			_chi2OfParticles[_numberOfTagged][j] = component->getTracks()[0]->getChi2()/(float)component->getTracks()[0]->getNdf();
+			_rHitOfParticles[_numberOfTagged][j] = component->getTracks()[0]->getRadiusOfInnermostHit();
+			_deltapOfParticles[_numberOfTagged][j] = GetDeltaP(component);
 			_vtxHitsOfParticles[_numberOfTagged][j] = component->getTracks()[0]->getSubdetectorHitNumbers()[0];
 			_tpcHitsOfParticles[_numberOfTagged][j] = component->getTracks()[0]->getSubdetectorHitNumbers()[6];
 			_ftdHitsOfParticles[_numberOfTagged][j] = component->getTracks()[0]->getSubdetectorHitNumbers()[4];
 			_sitHitsOfParticles[_numberOfTagged][j] = component->getTracks()[0]->getSubdetectorHitNumbers()[2];
 			_offsetOfParticles[_numberOfTagged][j] = offset;
+			MCParticle * mcp = ParticleOperator::GetMCParticleTrackRel(component, myTrackRel);
+			_isProngOfParticles[_numberOfTagged][j] = ParticleOperator::IsDublicate(mcp, myGenProngs);
+			_trueTypeOfParticles[_numberOfTagged][j] = (mcp)? mcp->getPDG():0;
+			double * trackPosition = myTrackOperator.GetStartPoint(component);
+			vector<float> diff = MathOperator::getDirection(vertexPos, trackPosition);
+			double diif[3];
+			double * newVertexPos = MathOperator::addVectors(vertexPos, MathOperator::toDoubleArray(_primary->getPosition(), 3), -1);
+
+			double * computedPoint = MathOperator::getPtOnVector(vertexPos, component->getMomentum());
+			vector< float > directionOffset =  MathOperator::getDirection(computedPoint);
+			double * zaxis = new double[3];
+			zaxis[0] = 0; zaxis[1] = 1; zaxis[2] = 0;
+			float newStart = MathOperator::scalarProduct(MathOperator::vectorProduct(zaxis, component->getMomentum()), vertexPos) / MathOperator::getModule(MathOperator::vectorProduct(zaxis, component->getMomentum())) ;
+			Track * track = component->getTracks()[0];
+			_dEdxOfParticles[_numberOfTagged][j] = track->getdEdx();
+			_errordEdxOfParticles[_numberOfTagged][j] = track->getdEdxError();
+			/*std::cout << "Start: " << start[0] << " "  
+				<< start[1] << " " 
+				<< start[2] << "\n";
+			std::cout << "Start: " << track->getD0() << " "  
+				<<  track->getZ0() << " " 
+				<<  track->getPhi() << "\n";
+			std::cout << "Extra: " << computedPoint[0] << " "  
+				<< computedPoint[1] << " " 
+				<< computedPoint[2] << "\n";
+			std::cout << "Extra: " << (computedPoint[0]*std::sin(track->getPhi()) - computedPoint[1] *std::cos(track->getPhi()))<< " "  
+				<< computedPoint[2] << " " 
+				<< MathOperator::getAngles( direction )[0] << "\n";*/
+			float angleStart = MathOperator::getAngleBtw(computedPoint, start);
+			_phi0OfParticles[_numberOfTagged][j] =  track->getPhi();
+			_z0OfParticles[_numberOfTagged][j] =  track->getZ0();
+			_d0OfParticles[_numberOfTagged][j] =  track->getD0();
+			if (mcp) 
+			{
+				double * computedPointMC = MathOperator::getPtOnVector(mcp->getVertex(), mcp->getMomentum());
+				vector<float> directionMC = MathOperator::getDirection(mcp->getMomentum());
+				float sin = std::sin(MathOperator::getAngles(directionMC)[1]);
+				_d0PrimeOfParticles[_numberOfTagged][j] =  -computedPointMC[0]*std::sin(track->getPhi()) + computedPointMC[1] *std::cos(track->getPhi());
+				//_z0PrimeOfParticles[_numberOfTagged][j] = computedPointMC[2] / std::abs(computedPointMC[2])* std::sqrt(offset * offset - _d0PrimeOfParticles[_numberOfTagged][j] * _d0PrimeOfParticles[_numberOfTagged][j]);
+				_z0PrimeOfParticles[_numberOfTagged][j] = computedPointMC[2] / sin / sin; // std::abs(_costhetaOfParticles[_numberOfTagged][j]);
+			}
+			else 
+			{
+				_d0PrimeOfParticles[_numberOfTagged][j] = -10.;
+				_z0PrimeOfParticles[_numberOfTagged][j] = -10.;
+			}
+			std::cout << "Offset: " << offset << " angle: " <<  angleStart << "\n";
+			double smearing[3];
+			float vproduct = MathOperator::getModule(MathOperator::vectorProduct(vertexPos, component->getMomentum()));
+			float offsetTheor = vproduct / MathOperator::getModule( component->getMomentum());
+			double * mystart = MathOperator::getVector( MathOperator::getDirection(computedPoint), offsetTheor);
+			for (int m = 0; m < 3; m++) 
+			{
+				diif[m] = diff[m];
+				smearing[m] = mystart[m] - start[m];//vertexPos[m]-_primary->getPosition()[m];
+			}
+			_deltaStartOfParticles[_numberOfTagged][j] = newStart/MathOperator::getModule(start);//MathOperator::getModule(smearing); //offsetTheor / offset;//MathOperator::getModule(start);
+			//_deltaStartOfParticles[_numberOfTagged][j] =  MathOperator::getModule( computedPoint)/offset;//MathOperator::getModule(smearing); //offsetTheor / offset;//MathOperator::getModule(start);
+			_angleOfParticles[_numberOfTagged][j] = MathOperator::getAngle(diif, component->getMomentum());
+			_deviationOfParticles[_numberOfTagged][j] = toperator.GetOffsetSignificance(component);
+			_errorOfParticles[_numberOfTagged][j] = toperator.GetOffsetErrorSimple(component);
 
 			_energyOfParticles[_numberOfTagged][j] = component->getEnergy();
 			_typeOfParticles[_numberOfTagged][j] = abs(component->getType());
@@ -1008,14 +1241,17 @@ namespace TTbarAnalysis
 		_numberOfSecondary += (tag->GetGeneration() == 2)? 1 : 0;
 		_PDG[_numberOfTagged] = tag->GetInitialPDG();
 		_angle[_numberOfTagged] = tag->GetTruthAngle();
+		_status[_numberOfTagged] = tag->GetStatus();
 		_generation[_numberOfTagged] = tag->GetGeneration();
 		_mindistance[_numberOfTagged] = tag->GetMinimalDistance();
 		_precision[_numberOfTagged] = MathOperator::getDistance(tag->GetVertex()->getPosition(), tag->__GetMCVertex()->getPosition());
 		double * mcpos = MathOperator::toDoubleArray(tag->__GetMCVertex()->getPosition(),3);
 		double * recopos = MathOperator::toDoubleArray(tag->GetVertex()->getPosition(),3);
 		vector<float> direction = MathOperator::getDirection(mcpos);
+		_costhetaVtx[_numberOfTagged] = std::cos(MathOperator::getAngles(direction)[1]);
 		_precisionT[_numberOfTagged] = MathOperator::getDistanceTo(recopos, direction, mcpos);
 		_truthNumber[_numberOfTagged] = (tag->GetStatus() == PRECISE_TAG)? tag->__GetMCTrackNumber():-1;
+		std::cout << "Reco dist: " <<  MathOperator::getModule(recopos) << " gen dist: " << MathOperator::getModule(mcpos) << " precision: " << _precision[_numberOfTagged] << "\n";
 		Vertex * vertex = tag->GetVertex();
 		Write (vertex);
 		_numberOfTagged++;
@@ -1028,8 +1264,8 @@ namespace TTbarAnalysis
 		_bbarprobmean = 0.0;
 		_bmomentum = 0.0;
 		_bbarmomentum = 0.0;
-		_bbarteta = -1.0;
-		_bteta = -1.0;
+		_bbarcostheta = -2.0;
+		_bcostheta = -2.0;
 		_numberOfMissedVtx = 0;
 		_numberOfMissed = 0;
 		_numberOfJets = 0;
@@ -1040,12 +1276,16 @@ namespace TTbarAnalysis
 		_numberOfUnknown = 0;
 		_bbarnumber1 = -1;
 		_bnumber1 = -1;
-		_bbarexists = 0;
-		_bexists = 0;
+		_bbargennumber = -1;
+		_bgennumber = -1;
+		_bbarnvtx = -1;
+		_bnvtx = -1;
 		_bbarptmiss = -1.0;
 		_bptmiss = -1.0;
 		_bcharge = -5;
 		_bbarcharge = -5;
+		_bgencharge = -5;
+		_bbargencharge = -5;
 		_bnoffsettracks = -1;
 		_bbarnoffsettracks = -1;
 		_bbarIPdistance = -1.0;
@@ -1058,16 +1298,23 @@ namespace TTbarAnalysis
 		for (int i = 0; i < MAXV; i++) 
 		{
 			_vtxAngleJetAxis[i] = -1.0;
+			_tagAngleJetAxis[i] = -1.0;
 			_offsetMissed[i] = -1.0;
+			_errorMissed[i] = -1.0;
+			_realoffsetMissed[i] = -1.0;
 			_deviationMissed[i] = -1.0;
 			_thetaMissed[i] = -1.0;
 			_massMissed[i] = -1.0;
 			_chi2Missed[i] = -1.0;
 			_isrecoMissed[i] = -1;
 			_vtxHitsMissed[i] = -1;
+			_d0Missed[i] = -100;
+			_z0Missed[i] = -100;
 			_omegatrackMissed[i] = 0.0;
+			_deltapMissed[i] = -1.0;
 			_tpcHitsMissed[i] = -1;
 			_sitHitsMissed[i] = -1;
+			_sigmaAngleMissed[i] = -1;
 			_interactedMissed[i] = -1;
 			_truthAngleMissed[i] = -1;
 			_ptMissed[i] = -1.0;
@@ -1081,19 +1328,38 @@ namespace TTbarAnalysis
 			_numberOfParticles[i] = 0;
 			_PDG[i] = 0;
 			_angle[i] = 0.0;
+			_costhetaVtx[i] = -2.0;
 			_generation[i] = 0;
 			_chi2[i] = -1.0;
+			_status[i] = -1;
 			_distanceFromIP[i] = -1.0;
 			_numberOfTracksMissedVtx[i] = 0;
 			for (int j = 0; j < MAXV; j++) 
 			{
 				_costhetaOfParticles[i][j] = -2.0;
+				_phiOfParticles[i][j] = -1.0;
+				_phi0OfParticles[i][j] = -10.0;
+				_z0OfParticles[i][j] =  -10.;
+				_d0OfParticles[i][j] =  -10.;
+				_d0PrimeOfParticles[i][j] = -10.;
+				_z0PrimeOfParticles[i][j] = -10.;
+
 				_chi2OfParticles[i][j] = -1.0;
+				_rHitOfParticles[i][j] = -1.0;
+				_deltapOfParticles[i][j] = -1.0;
 				_vtxHitsOfParticles[i][j] = -1;
 				_tpcHitsOfParticles[i][j] = -1;
 				_ftdHitsOfParticles[i][j] = -1;
 				_sitHitsOfParticles[i][j] = -1;
+				_isProngOfParticles[i][j] = -1;
+				_dEdxOfParticles[i][j] = -1.;
+				_errordEdxOfParticles[i][j] = -1.;
+				_trueTypeOfParticles[i][j] = 0;
+				_deltaStartOfParticles[i][j] = -1.;
 				_offsetOfParticles[i][j] = -1.0;
+				_angleOfParticles[i][j] = -1.0;
+				_deviationOfParticles[i][j] = -1.0;
+				_errorOfParticles[i][j] = -1.0;
 				_ptOfParticles[i][j] = -2.0;
 				_energyOfParticles[i][j] = -1.0;
 				_momentumOfParticles[i][j] = -1.0;
@@ -1106,6 +1372,7 @@ namespace TTbarAnalysis
 			for (int j = 0; j < MAXV3; j++) 
 			{
 				_pJetParticles[i][j] = -1.0;
+				_zJetParticles[i][j] = -1.0;
 				_costhetaJetParticles[i][j] = -2.0;
 				_typeJetParticles[i][j] = -1;
 				_vtxJetParticles[i][j] = -1;

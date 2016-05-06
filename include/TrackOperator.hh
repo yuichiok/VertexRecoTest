@@ -36,7 +36,9 @@ namespace TTbarAnalysis
 			float GetDistanceBtw(const EVENT::Vertex * ip, const EVENT::Vertex * sec, const EVENT::ReconstructedParticle * particle);
 			float GetError(EVENT::ReconstructedParticle * particle);
 			float GetOffsetError(EVENT::ReconstructedParticle * particle, double * trackPosition, const EVENT::Vertex * ip, double offset);
-			
+			//float GetOffsetError(EVENT::ReconstructedParticle * particle);
+			float GetOffsetErrorSimple(EVENT::ReconstructedParticle * particle);
+			float GetOffsetSignificance(EVENT::ReconstructedParticle * particle);
 			double * GetStartPoint(const EVENT::ReconstructedParticle * particle);
 			float GetDprime(const EVENT::ReconstructedParticle * particle1, const EVENT::ReconstructedParticle * particle2, double * primaryPosition);
 			void test();
@@ -54,7 +56,7 @@ namespace TTbarAnalysis
 		//	Private methods
 		//
 			const std::vector<float> getErrorPoint(const EVENT::ReconstructedParticle * particle) const;
-			float getError(GConfig & conf, const std::vector< float > pcovMatrix, const std::vector< float > ccovMatrix, const std::vector< float > ipcovMatrix);
+			float getError(GConfig & conf, const std::vector< float > pcovMatrix, const std::vector< float > ccovMatrix);//, const std::vector< float > ipcovMatrix);
 			void printConf(GConfig & conf);
 			double doffsetdC(GConfig & conf, int i);
 			double doffsetdp(GConfig & conf, int i);

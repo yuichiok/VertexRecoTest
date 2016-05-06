@@ -7,12 +7,16 @@ using EVENT::Vertex;
 using EVENT::ReconstructedParticle;
 namespace TTbarAnalysis 
 {
-	JetVertexOperator:: JetVertexOperator (EVENT::LCCollection * pfo, EVENT::LCCollection * egprongs )
+	JetVertexOperator:: JetVertexOperator (LCCollection * pfo, LCCollection * egprongs, LCCollection * trackrel)
 	{
 		myPFO = pfo;
 		myEGProngs = egprongs;
+		if (trackrel) 
+		{
+			myTrackRel = trackrel;
+		}
 		myAlgorithmName = "lcfiplus";
-		myAngleCut = 1.;
+		myAngleCut = 0.1; // CHANGED
 		ip[0] = 0.0;
 		ip[1] = 0.0;
 		ip[2] = 0.0;
@@ -76,6 +80,7 @@ namespace TTbarAnalysis
 		for (int i = 0; i < mcnumber; i++) 
 		{
 			Vertex * mcvertex = dynamic_cast< Vertex * >(mccol->getElementAt(i));
+			double * positionmc = MathOperator::toDoubleArray(mcvertex->getPosition(),3);
 			std::cout << "Vertex tags: " << mcvertex->getParameters()[1] << " & " << mcvertex->getParameters()[2] << '\n';
 			if (std::abs(mcvertex->getParameters()[2]) == 2) 
 			{
@@ -86,11 +91,9 @@ namespace TTbarAnalysis
 				for (int j = 0; j < jetnumber; j++) 
 				{
 					ReconstructedParticle * jetpart = dynamic_cast< ReconstructedParticle * >(jetcol->getElementAt(j));
-					bool found = false;
-
 					if (taken == jetpart->id()) 
 					{
-						//std::cout << "Jet skipped by index\n";
+						std::cout << "Jet skipped by index\n";
 						continue;
 					}
 					vector< Vertex * > * vertices = convert(navigator.getRelatedToObjects(jetpart));
@@ -99,13 +102,27 @@ namespace TTbarAnalysis
 					if (nvtx > 0) 
 					{
 						Vertex * recovertex = vertices->at(0);
-						float angle = MathOperator::getAngle(mcvertex->getAssociatedParticle()->getMomentum(), recovertex->getAssociatedParticle()->getMomentum());
-						if (angle < minangle / 2.0) 
+						double * positionreco = MathOperator::toDoubleArray(recovertex->getPosition(),3);
+						float angle = MathOperator::getAngleBtw(positionreco, positionmc);
+						std::cout << "Angle: " << angle << "\n";
+						if (angle < minangle)  
 						{
 							minangle = angle;
 							winner = j;
 						}
 					}
+				}
+				minangle = myAngleCut;
+				for (int j = 0; j < jetnumber; j++) 
+				{
+					if (winner > 0) 
+					{
+						break;
+					}
+					ReconstructedParticle * jetpart = dynamic_cast< ReconstructedParticle * >(jetcol->getElementAt(j));
+					vector< Vertex * > * vertices = convert(navigator.getRelatedToObjects(jetpart));
+					const vector< ReconstructedParticle * > components = jetpart->getParticles();
+					int nvtx = vertices->size();
 					if (nvtx == 0) 
 					{
 						for (int k = 0; k < components.size(); k++) 
@@ -276,7 +293,7 @@ namespace TTbarAnalysis
 	{
 		const vector< ReconstructedParticle * > mctracks = mcvertex->getAssociatedParticle()->getParticles();
 		vector< ReconstructedParticle * > recoPFOtracks = mapToPFO(recotracks);
-		vector< MCParticle * > recoRelatedPFOtracks = ParticleOperator::GetMCParticlesRel(recoPFOtracks, rel);
+		vector< MCParticle * > recoRelatedPFOtracks = ParticleOperator::GetMCParticlesRel(recoPFOtracks, rel, myTrackRel);
 
 		//vector< Particle > * result = new vector<Particle >();
 		vector< ReconstructedParticle * > * missed = CompareTracksRel(recoRelatedPFOtracks, mctracks);
@@ -322,6 +339,7 @@ namespace TTbarAnalysis
 				hits[3] = matchedmissed->getTracks()[0]->getSubdetectorHitNumbers()[2];
 				missedParticle.SetTruthAngle(MathOperator::getAngleBtw(missprong->getMomentum(), matchedmissed->getMomentum()));
 				missedParticle.SetHits(hits);
+				missedParticle.SetRecoParticle(matchedmissed);
 			}
 			else 
 			{
@@ -657,13 +675,13 @@ namespace TTbarAnalysis
 				float distance2 = MathOperator::getDistance(mcvertices[1]->getPosition(), recovertices->at(1)->getPosition());
 				if (distance1 < distance2) 
 				{
-					tag->SetRecoVertex(recovertices->at(0));
-					taken = 0;
+					tag->SetRecoVertex(recovertices->at(1)); // CHANGED
+					taken = 1; // CHANGED
 				}
 				else 
 				{
-					tag->SetRecoVertex(recovertices->at(1));
-					taken = 1;
+					tag->SetRecoVertex(recovertices->at(0));
+					taken = 0;
 				}
 				std::cout << "\tOne of two vertices tagged with " << distance1 << " vs " << distance2 <<" \n";
 				tag->SetStatus(PRECISE_TAG);//PRECISE_TAG
@@ -697,7 +715,7 @@ namespace TTbarAnalysis
 	{
 		int pfonumber = myPFO->getNumberOfElements();
 		vector< ReconstructedParticle * > result;
-		for (int i = 0; i < pfonumber; i++) 
+		/*for (int i = 0; i < pfonumber; i++) 
 		{
 			ReconstructedParticle * recopfo = dynamic_cast< ReconstructedParticle * >(myPFO->getElementAt(i));
 			if (std::abs(recopfo->getCharge()) < 0.1 ) 
@@ -705,14 +723,45 @@ namespace TTbarAnalysis
 				continue;
 			}
 			//std::cout << "Particle mapping begin:\n";
+			bool mapped = false;
 			for (int j = 0; j < secondaries.size(); j++) 
 			{
 				if (ParticleOperator::CompareParticles(recopfo, secondaries[j])) 
 				{
 					result.push_back(recopfo);
+					mapped = true;
 					//std::cout << "Particle mapped!\n";
 					break;
 				}
+			}
+			if (!mapped) 
+			{
+				std::cout << "ERROR: Particle is NOT mapped!\n";
+			}
+		}*/
+		for (int j = 0; j < secondaries.size(); j++) 
+		{
+			bool mapped = false;
+			for (int i = 0; i < pfonumber; i++) 
+			{
+				ReconstructedParticle * recopfo = dynamic_cast< ReconstructedParticle * >(myPFO->getElementAt(i));
+				if (std::abs(recopfo->getCharge()) < 0.1 )
+				{
+				        continue;
+				}
+				if (ParticleOperator::CompareParticles(recopfo, secondaries[j]))
+				{
+					result.push_back(recopfo);
+					mapped = true;
+					//std::cout << "Particle mapped!\n";
+					break;
+				}
+
+			}
+			if (!mapped) 
+			{
+			        std::cout << "ERROR: Particle is NOT mapped!\n";
+				result.push_back(secondaries[j]);
 			}
 		}
 		return result;
@@ -737,9 +786,9 @@ namespace TTbarAnalysis
 	}
 	float JetVertexOperator::getVertexAngle(ReconstructedParticle * particle, Vertex * secvertex)
 	{
-		double * start = new double[3];
+		/*double * start = new double[3];
 		Track * track = NULL; //particle->getTracks()[0];
-		/*for (int i = 0; i < particle->getTracks()[0]->getTracks().size(); i++) 
+		for (int i = 0; i < particle->getTracks()[0]->getTracks().size(); i++) 
 		{
 			if (particle->getTracks()[0]->getTracks()[i]->getSubdetectorHitNumbers()[0] > 0) 
 			{
@@ -747,7 +796,7 @@ namespace TTbarAnalysis
 				track = particle->getTracks()[0]->getTracks()[i];
 				particle = ParticleOperator::ReconstructParticle(track);
 			}
-		}*/
+		}
 		if (!track) 
 		{
 			track = particle->getTracks()[0];
@@ -758,7 +807,13 @@ namespace TTbarAnalysis
 		start[0] =  - d0 * std::sin(phi0);
 		start[1] =  d0 * std::cos(phi0);
 		start[2] = z0;
-		
+		*/
+		if (!particle || particle->getTracks().size() < 1) 
+		{
+			return -1.;
+		}
+		TrackOperator opera; 
+		double * start = opera.GetStartPoint(particle);
 		double * secondaryPosition = MathOperator::toDoubleArray(secvertex->getPosition(),3);
 		vector<float> diff = MathOperator::getDirection(secondaryPosition, start);
 		double diif[3];

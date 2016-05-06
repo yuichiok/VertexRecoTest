@@ -136,6 +136,7 @@ namespace TTbarAnalysis
 					{
 						int pdg = mcparticle->getPDG();
 						jet->SetMCPDG(pdg);
+						jet->SetTagAngle( MathOperator::getAngle(mcparticle->getMomentum(), jet->GetMomentum()));
 						std::cout << "Jet with btag " << jet->GetBTag() << " truth-tagged with " << pdg << '\n';
 						found = true;
 						number = j;

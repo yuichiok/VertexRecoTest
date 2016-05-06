@@ -43,7 +43,7 @@ namespace TTbarAnalysis
 		if (!particle || particle->getTracks().size() < 1) 
 		{
 			std::cout << "The particle is null or 0 tracks!\n";
-			return 0.0;
+			return -1;
 		}
 		Track * track = particle->getTracks()[0];
 		for (unsigned int i = 0; i < particle->getTracks().size(); i++) 
@@ -85,6 +85,8 @@ namespace TTbarAnalysis
 		float phi0 = track->getPhi();
 		start[0] =  - d0 * std::sin(phi0);
 		start[1] =  d0 * std::cos(phi0);
+		//start[0] =  d0 * std::cos(phi0);
+		//start[1] =  d0 * std::sin(phi0);
 		start[2] = z0;
 		return start;
 
@@ -136,16 +138,16 @@ namespace TTbarAnalysis
 		GConfig conf = {particle->getMomentum(), trackPosition, ip, m, p, vec};
 		const vector< float > pcovMatrix = particle->getCovMatrix();
 		const vector< float > ccovMatrix = getErrorPoint(particle);
-		const vector< float > ipcovMatrix = ipVertex->getCovMatrix();
+		//const vector< float > ipcovMatrix = ipVertex->getCovMatrix();
 		/*std::cout <<"\n!!!cCovMatrix:\n";
 		for (unsigned int i = 0; i < ccovMatrix.size(); i++) 
 		{
 			std::cout <<  i << ": " << ccovMatrix[i] << ' ';
 		}
 		std::cout <<"\n";*/
-		return getError(conf, pcovMatrix, ccovMatrix, ipcovMatrix);
+		return getError(conf, pcovMatrix, ccovMatrix);
 	}
-	float TrackOperator::getError(GConfig & conf, const vector< float > pcovMatrix, const vector< float > ccovMatrix, const vector< float > ipcovMatrix)
+	float TrackOperator::getError(GConfig & conf, const vector< float > pcovMatrix, const vector< float > ccovMatrix)//, const vector< float > ipcovMatrix)
 	{
 		float result = 0.0;
 		printConf(conf);
@@ -186,9 +188,33 @@ namespace TTbarAnalysis
 
 		       << '\n';
 	}
+	float TrackOperator::GetOffsetErrorSimple(EVENT::ReconstructedParticle * particle)
+	{
+		if (!particle || particle->getTracks().size() < 0) 
+		{
+			return -1;
+		}
+		Track * track = particle->getTracks()[0];
+		const vector<float> covMatrix = track->getCovMatrix();
+		float d0 = particle->getTracks()[0]->getD0();
+		float z0 = particle->getTracks()[0]->getZ0();
+		float offset = std::sqrt(d0*d0 + z0*z0);
+		float error = std::sqrt( d0*d0/offset/offset * covMatrix[0] + z0*z0/offset/offset * covMatrix[9] + 2*d0*z0/offset/offset * covMatrix[6] );
+		return error;
+		//return  covMatrix[0] +  covMatrix[9];
 
-	
-
+	}	
+	float TrackOperator::GetOffsetSignificance(EVENT::ReconstructedParticle * particle)
+	{
+		Track * track = particle->getTracks()[0];
+		const vector<float> covMatrix = track->getCovMatrix();
+		float d0 = track->getD0();
+		float z0 = track->getZ0();
+		float sigmad0 = covMatrix[0];
+		float sigmaz0d0 = covMatrix[6];
+		float sigmaz0 = covMatrix[9];
+		return std::abs(d0/std::sqrt(sigmad0)) + std::abs(z0/std::sqrt(sigmaz0));
+	}
 	void TrackOperator::printConf(GConfig & conf)
 	{
 		/*std::cout << "Configuration print: \n";

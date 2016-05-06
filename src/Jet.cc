@@ -13,6 +13,7 @@ namespace TTbarAnalysis
 		myMCPDG = 0;
 		myParticles = NULL;
 		myRecoVertices = NULL;
+		myTagAngle = -1;
 	}
 	Jet::Jet ()
 	{
@@ -53,6 +54,14 @@ namespace TTbarAnalysis
 	{
 		return myCTag;
 	}
+	float Jet::GetTagAngle()
+	{
+		return myTagAngle;
+	}
+	void Jet::SetTagAngle(float angle)
+	{
+		myTagAngle = angle;
+	}
 	int Jet::GetNumberOfVertices()
 	{
 		if (myRecoVertices) 
@@ -70,6 +79,59 @@ namespace TTbarAnalysis
 			for (unsigned int i = 0; i < myRecoVertices->size(); i++) 
 			{
 				sum += myRecoVertices->at(i)->getAssociatedParticle()->getParticles().size();
+			}
+		}
+		return sum;
+	}
+	float Jet::GetMinVtxProbability()
+	{
+		float minprob = 2.;
+		if (myRecoVertices) 
+		{
+			for (unsigned int i = 0; i < myRecoVertices->size(); i++) 
+			{
+				float probability = myRecoVertices->at(i)->getProbability();
+				if (probability < minprob) 
+				{
+					minprob = probability;
+				}
+			}
+		}
+		return minprob;
+	}
+	float Jet::GetMaxVtxChi2()
+	{
+		float maxchi = -1.;
+		if (myRecoVertices) 
+		{
+			for (unsigned int i = 0; i < myRecoVertices->size(); i++) 
+			{
+				float chi = myRecoVertices->at(i)->getChi2();
+				if (chi > maxchi) 
+				{
+					maxchi = chi;
+				}
+			}
+		}
+		return maxchi;
+	}
+	int Jet::__GetGenNumberOfVertexParticles()
+	{
+		int sum = 0;
+		for (int i = 0; i < myVertexTags.size(); i++) 
+		{
+			sum += myVertexTags[i]->__GetMCTrackNumber();
+		}
+		return sum;
+	}
+	int Jet::__GetGenCharge()
+	{
+		int sum = 0;
+		for (int i = 0; i < myVertexTags.size(); i++) 
+		{
+			if (myVertexTags[i]->__GetMCVertex()->getParameters()[2] == 2) 
+			{
+				sum = myVertexTags[i]->__GetMCVertex()->getAssociatedParticle()->getCharge();
 			}
 		}
 		return sum;
@@ -112,6 +174,19 @@ namespace TTbarAnalysis
 			 }
 		}
 		return mass;
+	}
+	float Jet::GetHadronCostheta()
+	{
+		float costheta = -2.0;
+		if (myRecoVertices && myRecoVertices->size() > 0 && myRecoVertices->at(0)) 
+		{
+			//const float * position = myRecoVertices->at(0)->getPosition();
+			//std::cout << position[2] << "\n";
+			//const double * vertex = MathOperator::toDoubleArray(position,3);
+			vector< float > direction = MathOperator::getDirection(myRecoVertices->at(0)->getAssociatedParticle()->getMomentum());
+			costheta = std::cos(MathOperator::getAngles(direction)[1]);
+		}
+		return costheta;
 	}
 	float Jet::GetHadronDistance()
 	{

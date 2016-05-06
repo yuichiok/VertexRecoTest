@@ -33,7 +33,8 @@ namespace TTbarAnalysis
 			static bool CompareParticles(EVENT::MCParticle * particle1, EVENT::ReconstructedParticle * particle2);
 			static bool CheckForVertex(EVENT::ReconstructedParticle * particle1);
 			static bool IsDublicate(EVENT::MCParticle * particle, std::vector< EVENT::MCParticle * > & list);
-			static std::vector< EVENT::MCParticle * > GetMCParticlesRel(const std::vector< EVENT::ReconstructedParticle * > & secondaries, EVENT::LCCollection * rel);
+			static std::vector< EVENT::MCParticle * > GetMCParticlesRel(const std::vector< EVENT::ReconstructedParticle * > & secondaries, EVENT::LCCollection * rel, EVENT::LCCollection * trackrel = NULL);
+			static EVENT::MCParticle * GetMCParticleTrackRel(const EVENT::ReconstructedParticle * secondaries, EVENT::LCCollection * trackrel);
 			static EVENT::ReconstructedParticle * GetRecoParticle(EVENT::MCParticle *  particle, EVENT::LCCollection * rel);
 			static EVENT::Track * GetTrackRel(EVENT::MCParticle *  particle, EVENT::LCCollection * rel);
 			static EVENT::ReconstructedParticle * ReconstructParticle(EVENT::Track *  track);
