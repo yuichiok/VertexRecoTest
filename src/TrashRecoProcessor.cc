@@ -208,6 +208,7 @@ namespace TTbarAnalysis
 		_hTaggedTree->Branch("energyOfParticles", _energyOfParticles, "energyOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("momentumOfParticles", _momentumOfParticles, "momentumOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("typeOfParticles", _typeOfParticles, "typeOfParticles[numberOfTagged][15]/I");
+		_hTaggedTree->Branch("chargeOfParticles", _chargeOfParticles, "chargeOfParticles[numberOfTagged][15]/I");
 		_hTaggedTree->Branch("costhetaOfParticles", _costhetaOfParticles, "costhetaOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("phiOfParticles", _phiOfParticles, "phiOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("thetaOfParticles", _thetaOfParticles, "thetaOfParticles[numberOfTagged][15]/F");
@@ -227,6 +228,8 @@ namespace TTbarAnalysis
 		_hTaggedTree->Branch("dEdxOfParticles", _dEdxOfParticles, "dEdxOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("errordEdxOfParticles", _errordEdxOfParticles, "errordEdxOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("trueTypeOfParticles", _trueTypeOfParticles, "trueTypeOfParticles[numberOfTagged][15]/I");
+		_hTaggedTree->Branch("pidTypeOfParticles", _pidTypeOfParticles, "pidTypeOfParticles[numberOfTagged][15]/I");
+		_hTaggedTree->Branch("pidLikeOfParticles", _pidLikeOfParticles, "pidLikeOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("ptOfParticles", _ptOfParticles, "ptOfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("phi0OfParticles", _phi0OfParticles, "phi0OfParticles[numberOfTagged][15]/F");
 		_hTaggedTree->Branch("z0OfParticles", _z0OfParticles, "z0OfParticles[numberOfTagged][15]/F");
@@ -422,6 +425,7 @@ namespace TTbarAnalysis
 			LCCollection* truthtrackrel = evt->getCollection( _colTrackRelName );
 			myTrackRel = truthtrackrel;
 			LCCollection* quarks = evt->getCollection( _colquarkName );
+			_myPIDHandler = new PIDHandler(evt->getCollection(_colPFOName));
 			int number = col->getNumberOfElements();
 			_numberOfTotal = number;
 			_primary = FindPrimaryVertex( evt->getCollection( _colPriName ));
@@ -433,6 +437,17 @@ namespace TTbarAnalysis
 			}
 			LCCollection* jets = evt->getCollection( _colJetsName );
 			LCCollection* rel = evt->getCollection( _colJetsRelName );
+			if (!jets || jets->getNumberOfElements() < 1) 
+			{
+				std::cout << "CRITICAL: Jet number " << jets->getNumberOfElements() <<"!!!\n";
+				_hTree->Fill();
+				_hTaggedTree->Fill();
+				_hJetTree->Fill();
+				_hMissedVertexTree->Fill();
+				_hMissedTree->Fill();
+				ClearVariables();
+				return;
+			}
 			_numberIncoming += egprongs->getNumberOfElements();
 			//AnalyseSecondaries(evt->getCollection(_colProngsName),evt->getCollection(_colRelName),col);
 			JetVertexOperator jetvertex(evt->getCollection(_colPFOName), egprongs, truthtrackrel);
@@ -447,7 +462,7 @@ namespace TTbarAnalysis
 			//vector< ReconstructedParticle * > * missed =  jetvertex.GetMissedTracks(nextjets, converted);
 			vector< ReconstructedParticle * > * missed =  jetvertex.GetMissedTracksRel(truthrel, nextjets, converted);
 			//vector< MCParticle * > * missed2 =  jetvertex.GetMissedTracks(evt->getCollection( _colProngsName ),evt->getCollection(_colRelName), mcmissed);
-			//vector< ReconstructedParticle * > * cprongs = jetvertex.GetRecoParticles(egprongs, truthrel);
+			vector< ReconstructedParticle * > * cprongs = jetvertex.GetRecoParticles(egprongs, truthrel);
 
 			Write(evt, converted, missed);
 			if ((int)((float)mc->getNumberOfElements()/2.0) != (int)nextjets->size()) 
@@ -460,11 +475,11 @@ namespace TTbarAnalysis
 			reco->setSubset();
 			recoprongs->setSubset();
 			recomatch->setSubset();
-			/*for (int i = 0; i < cprongs->size(); i++) 
+			for (int i = 0; i < cprongs->size(); i++) 
 			{
 				recomatch->addElement(cprongs->at(i));
 				recoprongs->addElement(cprongs->at(i)->getTracks()[0]);
-			}*/
+			}
 			for (int i = 0; i < nextjets->size(); i++) 
 			{
 				for (int j = 0; j < nextjets->at(i)->GetNumberOfVertices(); j++) 
@@ -497,73 +512,6 @@ namespace TTbarAnalysis
 			_hMissedTree->Fill();
 			ClearVariables();
 			
-			/*//std::cout << "Event: " << _nEvt << '\n';
-			_nEvt ++ ;
-			_primary = FindPrimaryVertex( evt->getCollection( _colPriName ));
-			VertexRecoOperator reco(_angleAcceptance, _primary);
-			if (_handleJets) 
-			{
-				try{
-					LCCollection* jets = evt->getCollection( _colJetsName );
-					LCCollection* rel = evt->getCollection( _colJetsRelName );
-					JetOperator jetOperator(0.1 , "lcfiplus");
-					JetVertexOperator jetvertex;
-					//jetOperator.GetBtags(jets);
-					vector< Jet * > * btagjets = jetOperator.GetJets(jets, rel);
-					LCCollection* quarks = evt->getCollection( _colquarkName );
-					jetOperator.CompareDirection(btagjets, quarks);
-					std::cout<<"***New:***\n";
-					vector< Jet * > * nextjets = jetvertex.TagJets(jets, mc, rel);
-					jetvertex.TagVertices(nextjets, mc);
-					vector< Particle > * converted = new vector< Particle >();
-					vector< ReconstructedParticle * > * missed =  jetvertex.GetMissedTracks(nextjets, converted);
-					Write(evt, converted, missed);
-					if ((int)((float)mc->getNumberOfElements()/2.0) != nextjets->size()) 
-					{
-						std::cout << "CRITICAL: " << mc->getNumberOfElements() << ' ' << nextjets->size() <<"!!!\n";
-					}
-					
-					Write(btagjets);
-					_hJetTree->Fill();
-				}
-				catch( DataNotAvailableException &e)
-				{
-					std::cout << "Jets collections are not available!\n";
-				}
-			}
-			//vector< VertexTag * > * tagged = reco.Compare(col, mc);
-			vector< VertexTag * > * tagged = reco.CompareDirection(col, mc);
-			vector< ReconstructedParticle * > * recomissed = new vector< ReconstructedParticle * >();
-			vector< Particle > * missed = reco.CompareTracks(col, mc, recomissed);
-			int reconot = 0;
-			int mcnot = 0;
-			int missednot = missed->size();
-			for (int i = 0; i < tagged->size(); i++) 
-			{
-				reconot += tagged->at(i)->GetTrackNumber();
-				mcnot += tagged->at(i)->__GetMCTrackNumber();
-			}
-			_numberOfTagged = tagged->size();
-			_numberOfUnknown = number - _numberOfTagged;
-			std::cout << "We have " << number << " vertices total\n";
-			WriteTagged(tagged);
-			WriteTaggedCollection(evt, tagged);
-			//Write(evt, missed, recomissed);
-			_hMissedTree->Fill();
-			_hTree->Fill();
-			_hTaggedTree->Fill();
-			ClearVariables();
-			vector< Vertex * > unknown = reco.GetUnknownVertexes();
-			for (unsigned int i = 0; i < unknown.size(); i++) 
-			{
-				Write(unknown[i],i);
-			}
-			std::cout << "We have " << unknown.size() << " unknown vertices\n";
-			_numberOfUnknown = unknown.size();
-			_hSecTree->Fill();
-			_hUntaggedTree->Fill();
-			ClearVariables();
-			delete tagged;*/
 	
 		}
 		catch( DataNotAvailableException &e)
@@ -1162,6 +1110,26 @@ namespace TTbarAnalysis
 			MCParticle * mcp = ParticleOperator::GetMCParticleTrackRel(component, myTrackRel);
 			_isProngOfParticles[_numberOfTagged][j] = ParticleOperator::IsDublicate(mcp, myGenProngs);
 			_trueTypeOfParticles[_numberOfTagged][j] = (mcp)? mcp->getPDG():0;
+			if (component->getParticleIDs().size() > 0) 
+			{
+				  
+				for (int k = 0; k < component->getParticleIDs().size(); k++) 
+				{
+					//std::cout << "PID: " << component->getParticleIDs()[k]->getPDG() << " " <<  component->getParticleIDs()[k]->getLikelihood() << "\n";
+				}
+				int pid = _myPIDHandler->getAlgorithmID("HadronTagger");
+				std::cout << "-----\nPID: " << _myPIDHandler->getParticleID(component, pid).getPDG() << " (" << _trueTypeOfParticles[_numberOfTagged][j] << ") p: " << MathOperator::getModule( component->getMomentum()) << "\n";
+				for (int k = 0; k < _myPIDHandler->getParticleID(component,pid).getParameters().size(); k++) 
+				{
+					std::cout << "Parameters: " << _myPIDHandler->getParameterNames(pid)[k] << " " << _myPIDHandler->getParticleID(component,pid).getParameters()[k] << "\n";
+				}
+				_pidTypeOfParticles[_numberOfTagged][j] =  _myPIDHandler->getParticleID(component,pid).getPDG();
+				_pidLikeOfParticles[_numberOfTagged][j] =  _myPIDHandler->getParticleID(component,pid).getLikelihood();
+			}
+			else 
+			{
+				std::cout << "NO PID!\n";
+			}
 			double * trackPosition = myTrackOperator.GetStartPoint(component);
 			vector<float> diff = MathOperator::getDirection(vertexPos, trackPosition);
 			double diif[3];
@@ -1175,18 +1143,6 @@ namespace TTbarAnalysis
 			Track * track = component->getTracks()[0];
 			_dEdxOfParticles[_numberOfTagged][j] = track->getdEdx();
 			_errordEdxOfParticles[_numberOfTagged][j] = track->getdEdxError();
-			/*std::cout << "Start: " << start[0] << " "  
-				<< start[1] << " " 
-				<< start[2] << "\n";
-			std::cout << "Start: " << track->getD0() << " "  
-				<<  track->getZ0() << " " 
-				<<  track->getPhi() << "\n";
-			std::cout << "Extra: " << computedPoint[0] << " "  
-				<< computedPoint[1] << " " 
-				<< computedPoint[2] << "\n";
-			std::cout << "Extra: " << (computedPoint[0]*std::sin(track->getPhi()) - computedPoint[1] *std::cos(track->getPhi()))<< " "  
-				<< computedPoint[2] << " " 
-				<< MathOperator::getAngles( direction )[0] << "\n";*/
 			float angleStart = MathOperator::getAngleBtw(computedPoint, start);
 			_phi0OfParticles[_numberOfTagged][j] =  track->getPhi();
 			_z0OfParticles[_numberOfTagged][j] =  track->getZ0();
@@ -1223,6 +1179,7 @@ namespace TTbarAnalysis
 
 			_energyOfParticles[_numberOfTagged][j] = component->getEnergy();
 			_typeOfParticles[_numberOfTagged][j] = abs(component->getType());
+			_chargeOfParticles[_numberOfTagged][j] = (component->getCharge());
 			_numberTagged++;
 		}
 		float distance = MathOperator::getDistance(_primary->getPosition(), vertex->getPosition() );
@@ -1258,6 +1215,8 @@ namespace TTbarAnalysis
 	}
 	void TrashRecoProcessor::ClearVariables()
 	{
+		delete _myPIDHandler;
+		
 		_bbarchimean = 0.0;
 		_bchimean = 0.0;
 		_bprobmean = 0.0;
@@ -1355,6 +1314,8 @@ namespace TTbarAnalysis
 				_dEdxOfParticles[i][j] = -1.;
 				_errordEdxOfParticles[i][j] = -1.;
 				_trueTypeOfParticles[i][j] = 0;
+				_pidLikeOfParticles[i][j] = 0;
+				_pidTypeOfParticles[i][j] = 0;
 				_deltaStartOfParticles[i][j] = -1.;
 				_offsetOfParticles[i][j] = -1.0;
 				_angleOfParticles[i][j] = -1.0;
@@ -1364,6 +1325,7 @@ namespace TTbarAnalysis
 				_energyOfParticles[i][j] = -1.0;
 				_momentumOfParticles[i][j] = -1.0;
 				_typeOfParticles[i][j] = 0;
+				_chargeOfParticles[i][j] = 0;
 				_costhetaOfParticlesVtx[i][j] = -2.0;
 				_momentumOfParticlesVtx[i][j] = -1.0;
 				_ptOfParticlesVtx[i][j] = -1.0;

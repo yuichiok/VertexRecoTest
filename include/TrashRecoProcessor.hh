@@ -11,6 +11,7 @@
 #include <EVENT/MCParticle.h>
 #include <UTIL/LCRelationNavigator.h>
 
+#include <UTIL/PIDHandler.h>
 // ----- include for verbosity dependend logging ---------
 #include "marlin/VerbosityLevels.h"
 #include "marlin/Processor.h"
@@ -180,6 +181,7 @@ namespace TTbarAnalysis
 	  float _costhetaOfParticles[MAXV][MAXV];
 	  float _phiOfParticles[MAXV][MAXV];
 	  int _typeOfParticles[MAXV][MAXV];
+	  int _chargeOfParticles[MAXV][MAXV];
 	  float _angleOfParticles[MAXV][MAXV];
 	  float _offsetOfParticles[MAXV][MAXV];
 	  float _deviationOfParticles[MAXV][MAXV];
@@ -201,8 +203,11 @@ namespace TTbarAnalysis
 	  float _dEdxOfParticles[MAXV][MAXV];
 	  float _errordEdxOfParticles[MAXV][MAXV];
 	  int _trueTypeOfParticles[MAXV][MAXV];
+	  int _pidTypeOfParticles[MAXV][MAXV];
+	  float _pidLikeOfParticles[MAXV][MAXV];
 	  //TLorentzVector * _particles[MAXV][MAXV]
 	  Vertex * _primary;
+	  UTIL::PIDHandler * _myPIDHandler;
 	  LCCollection * myTrackRel;
 	  std::vector<EVENT::MCParticle * > myGenProngs;
 	  
