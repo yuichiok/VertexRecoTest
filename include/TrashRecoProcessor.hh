@@ -25,6 +25,7 @@
 #include "ParticleOperator.hh"
 #include "JetVertexOperator.hh"
 #include "VertexTag.hh"
+#include "RecoJet.hh"
 #include <string>
 #include <vector>
 #include <TFile.h>
@@ -66,6 +67,8 @@ namespace TTbarAnalysis
 	  /** Called after data processing for clean up.
 	   */
 	  virtual void end() ;
+	  void WriteEGReco(LCEvent * evt);
+	  void WriteBuildUp(LCEvent * evt);
 	  void Write(VertexTag * tag);
 	  void Write(Vertex * vertex);
 	  void WriteMissed(Vertex * vertex, LCCollection * collection);
@@ -85,8 +88,11 @@ namespace TTbarAnalysis
 	  void Write(LCEvent * evt, std::vector< Particle > * missed, std::vector< ReconstructedParticle * > * m = NULL);
 	  void GetBAngles(const std::vector< VertexTag * > & tags);
 	  float GetDeltaP(ReconstructedParticle * particle);
+	  std::vector< RecoJet * > * getJets(LCCollection * jetcol, LCCollection *jetrelcol);
 	 protected:
 	
+	  std::vector< Vertex * > * convert(const std::vector< LCObject * > & objs);
+	  void PrintJet(RecoJet * jet);
 	  /** Input collection name.
 	   */
 	  std::string _colSecName ;
@@ -116,6 +122,8 @@ namespace TTbarAnalysis
 	  TTree * _hJetTree;
 	  TTree * _hMissedTree;
 	  TTree * _hMissedVertexTree;
+	  TTree * _hRecoProngsTree;
+	  TTree * _hBuildTree;
 	  std::string _hfilename ;
 	  float _angleAcceptance;	  
 	  int _handleJets; 
@@ -192,6 +200,7 @@ namespace TTbarAnalysis
 	  float _phi0OfParticles[MAXV][MAXV];
 	  float _d0OfParticles[MAXV][MAXV];
 	  float _z0OfParticles[MAXV][MAXV];
+	  float _errorz0OfParticles[MAXV][MAXV];
 	  float _d0PrimeOfParticles[MAXV][MAXV];
 	  float _rHitOfParticles[MAXV][MAXV];
 	  float _z0PrimeOfParticles[MAXV][MAXV];
@@ -216,6 +225,7 @@ namespace TTbarAnalysis
 	  float _ctags[MAXV];
 	  int _mcpdg[MAXV];
 	  int _nvertices[MAXV];
+	  int _has1trvertex[MAXV];
 	  float _costhetaJetParticles[MAXV][MAXV3];
 	  int _nJetParticles[MAXV];
 	  float _vtxAngleJetAxis[MAXV];
@@ -270,6 +280,8 @@ namespace TTbarAnalysis
 	  float _costhetaOfParticlesVtx[MAXV][MAXV];
 	  float _ptOfParticlesVtx[MAXV][MAXV];
 	  float _offsetOfParticlesVtx[MAXV][MAXV];
+	  float _angleOfParticlesVtx[MAXV][MAXV];
+	  int _otherMissedVtx[MAXV];
 
 	  int _numberOfSecondaries;
 	  int _misrecoNumber;
@@ -282,6 +294,17 @@ namespace TTbarAnalysis
 	  int _numberMissed1;
 	  int _numberMissed2;
 	  int _numberNotHandled;
+
+	  int _numberOfProngs;
+	  float _costhetaOfProngs[MAXV2];
+	  float _d0OfProngs[MAXV2];
+	  float _z0OfProngs[MAXV2];
+	  float _sd0OfProngs[MAXV2];
+	  float _sz0OfProngs[MAXV2];
+	  int _ftdHitsOfProngs[MAXV2];
+
+	  int _nBuild;
+	  float _costhetaOfBuild[MAXV2];
 	} ;
 		
 } /* TTbarAnalysis */

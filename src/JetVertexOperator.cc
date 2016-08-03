@@ -16,7 +16,7 @@ namespace TTbarAnalysis
 			myTrackRel = trackrel;
 		}
 		myAlgorithmName = "lcfiplus";
-		myAngleCut = 0.1; // CHANGED
+		myAngleCut = 0.4; // CHANGED
 		ip[0] = 0.0;
 		ip[1] = 0.0;
 		ip[2] = 0.0;
@@ -96,7 +96,14 @@ namespace TTbarAnalysis
 						std::cout << "Jet skipped by index\n";
 						continue;
 					}
-					vector< Vertex * > * vertices = convert(navigator.getRelatedToObjects(jetpart));
+					float angle = MathOperator::getAngleBtw(mcparticle->getMomentum(), jetpart->getMomentum());
+					std::cout << "Angle: " << angle << "\n";
+					if (angle < minangle)
+					{
+						minangle = angle;
+						winner = j;
+					}//*/
+					/*vector< Vertex * > * vertices = convert(navigator.getRelatedToObjects(jetpart));
 					const vector< ReconstructedParticle * > components = jetpart->getParticles();
 					int nvtx = vertices->size();
 					if (nvtx > 0) 
@@ -110,9 +117,9 @@ namespace TTbarAnalysis
 							minangle = angle;
 							winner = j;
 						}
-					}
+					}//*/
 				}
-				minangle = myAngleCut;
+				/*minangle = myAngleCut;
 				for (int j = 0; j < jetnumber; j++) 
 				{
 					if (winner > 0) 
@@ -137,7 +144,7 @@ namespace TTbarAnalysis
 							
 						}
 					}
-				}
+				}//*/
 				if (winner > -1) 
 				{
 					ReconstructedParticle * jetpart = dynamic_cast< ReconstructedParticle * >(jetcol->getElementAt(winner));
@@ -155,6 +162,10 @@ namespace TTbarAnalysis
 						  << " angle-tag: " << minangle 
 						  << " # of vtx: " << nvtx 
 						  <<  '\n';
+					if (nvtx > 0)
+					{
+						std::cout << "Algorithm type: " << vertices->at(0)->getAlgorithmType() << "\n";
+					}
 					Jet * jet = new Jet(btag, ctag, nvtx, jetpart->getMomentum());
 					//jet->SetBTag(btag);
 					//jet->SetCTag(ctag);
