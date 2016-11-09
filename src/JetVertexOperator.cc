@@ -22,6 +22,50 @@ namespace TTbarAnalysis
 		ip[2] = 0.0;
 
 	}
+	Track * JetVertexOperator::GetTrack(MCParticle * particle, LCCollection * rel)
+	{
+		LCRelationNavigator navigator(rel);
+		vector< LCObject * > obj = navigator.getRelatedFromObjects(particle);
+		if (obj.size() < 1) 
+		{
+			return NULL;
+		}
+		float maxweight = 0.0;
+		vector< float > weights = navigator.getRelatedFromWeights (particle); 
+		Track * winner = NULL; 
+		for (unsigned int j = 0; j < obj.size(); j++) 
+		{
+			Track * reco = dynamic_cast< Track * >(obj[j]);
+			if (weights[j] > maxweight) 
+			{
+				maxweight = weights[j];
+				winner = reco;
+			}
+		}
+		return winner;
+	}
+	ReconstructedParticle * JetVertexOperator::GetRecoParticle(MCParticle * particle, LCCollection * rel)
+	{
+		LCRelationNavigator navigator(rel);
+		vector< LCObject * > obj = navigator.getRelatedFromObjects(particle);
+		if (obj.size() < 1) 
+		{
+			return NULL;
+		}
+		float maxweight = 0.0;
+		vector< float > weights = navigator.getRelatedFromWeights (particle); 
+		ReconstructedParticle * winner = NULL; 
+		for (unsigned int j = 0; j < obj.size(); j++) 
+		{
+			ReconstructedParticle * reco = dynamic_cast< ReconstructedParticle * >(obj[j]);
+			if (weights[j] > maxweight && std::abs(reco->getCharge()) > 0.09) 
+			{
+				maxweight = weights[j];
+				winner = reco;
+			}
+		}
+		return winner;
+	}
 	vector< ReconstructedParticle * > * JetVertexOperator::GetRecoParticles(LCCollection * prongs, LCCollection * rel)
 	{
 		vector<ReconstructedParticle*> * result = new vector<ReconstructedParticle*>();
@@ -30,29 +74,10 @@ namespace TTbarAnalysis
 		for (int i = 0; i < prongnumber; i++) 
 		{
 			MCParticle * particle =  dynamic_cast< MCParticle * >(prongs->getElementAt(i));
-			vector< LCObject * > obj = navigator.getRelatedFromObjects(particle);
-			if (obj.size() < 1) 
+			ReconstructedParticle * winner = GetRecoParticle(particle, rel);
+			if(winner)
 			{
-				continue;
-			}
-			if (obj.size() > 0) 
-			{
-				float maxweight = 0.0;
-				vector< float > weights = navigator.getRelatedFromWeights (particle); 
-				ReconstructedParticle * winner = NULL; 
-				for (unsigned int j = 0; j < obj.size(); j++) 
-				{
-					ReconstructedParticle * reco = dynamic_cast< ReconstructedParticle * >(obj[j]);
-					if (weights[j] > maxweight && std::abs(reco->getCharge()) > 0.09) 
-					{
-						maxweight = weights[j];
-						winner = reco;
-					}
-				}
-				if (winner) 
-				{
-					result->push_back(winner);
-				}
+				result->push_back(winner);
 			}
 		}
 		return result;
@@ -66,16 +91,33 @@ namespace TTbarAnalysis
 		vector< Jet * > * result = new vector< Jet * >();
 		LCRelationNavigator navigator(rel);
 		PIDHandler pidh(jetcol);
-		int alid;
-		try
+		int alid = -1;
+		if (pidh.getAlgorithmIDs().size() > 0) 
 		{
-			alid = pidh.getAlgorithmID("vtxrec");
+			try
+			{
+				alid = pidh.getAlgorithmID("vtxrec");
+			}
+			catch(UTIL::UnknownAlgorithm &e)
+			{
+				std::cout << "No algorithm vtxrec!\n";
+				alid = -1;
+			}
+			//if (alid < 0) 
+			{
+				try 
+				{
+					std::cout << "Trying \n";
+					alid = pidh.getAlgorithmID(myAlgorithmName);
+				}
+				catch(UTIL::UnknownAlgorithm &e) 
+				{
+					std::cout << e.what() << "\n";
+					alid = pidh.getAlgorithmID("");
+				}
+				
+			}
 		}
-		catch(UTIL::UnknownAlgorithm &e)
-		{
-			std::cout << "No algorithm vtxrec!\n";
-			alid = pidh.getAlgorithmID(myAlgorithmName);
-		}	
 		int taken = -1;
 		for (int i = 0; i < mcnumber; i++) 
 		{
@@ -151,10 +193,15 @@ namespace TTbarAnalysis
 					vector< Vertex * > * vertices = convert(navigator.getRelatedToObjects(jetpart));
 					const vector< ReconstructedParticle * > components = jetpart->getParticles();
 					int nvtx = vertices->size();
-					const ParticleID& pid = pidh.getParticleID(jetpart,alid);
-					vector<float> params = pid.getParameters();
-					float btag = params[pidh.getParameterIndex(alid,"BTag")];
-					float ctag = params[pidh.getParameterIndex(alid,"CTag")];
+					float btag = 0.;
+					float ctag = 0.;
+					if (alid > -1) 
+					{
+						const ParticleID& pid = pidh.getParticleID(jetpart,alid);
+						vector<float> params = pid.getParameters();
+						btag = params[pidh.getParameterIndex(alid,"BTag")];
+						ctag = params[pidh.getParameterIndex(alid,"CTag")];
+					}
 					taken = jetpart->id();
 					std::cout << "Jet energy: " << jetpart->getEnergy() 
 						  << " b-tag: " << btag 
@@ -179,6 +226,7 @@ namespace TTbarAnalysis
 					std::cout << "ERROR: Jet not found!!!\n";
 				}
 			}
+			delete positionmc;
 		}
 
 		return result;

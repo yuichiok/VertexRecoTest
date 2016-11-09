@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <iomanip>
 #include <EVENT/LCCollection.h>
+#include <EVENT/CalorimeterHit.h>
+#include <EVENT/RawCalorimeterHit.h>
+#include <EVENT/SimCalorimeterHit.h>
 #include <IMPL/LCCollectionVec.h>
 #include <EVENT/Vertex.h>
 #include <IMPL/VertexImpl.h>
@@ -90,7 +93,7 @@ namespace TTbarAnalysis
 	  float GetDeltaP(ReconstructedParticle * particle);
 	  std::vector< RecoJet * > * getJets(LCCollection * jetcol, LCCollection *jetrelcol);
 	 protected:
-	
+	  SimCalorimeterHit * getSimHit(CalorimeterHit * hit);
 	  std::vector< Vertex * > * convert(const std::vector< LCObject * > & objs);
 	  void PrintJet(RecoJet * jet);
 	  /** Input collection name.
@@ -141,6 +144,7 @@ namespace TTbarAnalysis
 	  int _bbargencharge;
 	  int _bnoffsettracks;
 	  int _bbarnoffsettracks;
+	  float _MCMass;
 	  float _btag;
 	  float _bbartag;
 	  float _bmomentum;
@@ -210,6 +214,9 @@ namespace TTbarAnalysis
 	  int _sitHitsOfParticles[MAXV][MAXV];
 	  int _isProngOfParticles[MAXV][MAXV];
 	  float _dEdxOfParticles[MAXV][MAXV];
+	  float _mintimeOfParticles[MAXV][MAXV];
+	  float _lengthOfParticles[MAXV][MAXV];
+	  float _avtimeOfParticles[MAXV][MAXV];
 	  float _errordEdxOfParticles[MAXV][MAXV];
 	  int _trueTypeOfParticles[MAXV][MAXV];
 	  int _pidTypeOfParticles[MAXV][MAXV];
@@ -218,6 +225,7 @@ namespace TTbarAnalysis
 	  Vertex * _primary;
 	  UTIL::PIDHandler * _myPIDHandler;
 	  LCCollection * myTrackRel;
+	  LCCollection * mySimHitRel;
 	  std::vector<EVENT::MCParticle * > myGenProngs;
 	  
 	  int _numberOfJets;
@@ -297,11 +305,14 @@ namespace TTbarAnalysis
 
 	  int _numberOfProngs;
 	  float _costhetaOfProngs[MAXV2];
+	  float _pOfProngs[MAXV2];
 	  float _d0OfProngs[MAXV2];
 	  float _z0OfProngs[MAXV2];
 	  float _sd0OfProngs[MAXV2];
 	  float _sz0OfProngs[MAXV2];
 	  int _ftdHitsOfProngs[MAXV2];
+	  int _vtxHitsOfProngs[MAXV2];
+	  int _isRecoOfProngs[MAXV2];
 
 	  int _nBuild;
 	  float _costhetaOfBuild[MAXV2];

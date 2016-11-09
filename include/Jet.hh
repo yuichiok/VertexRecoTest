@@ -22,7 +22,14 @@ namespace TTbarAnalysis
 		//
 			Jet (float btag, float ctag, int number, const double * momentum);
 			Jet ();
-			virtual ~Jet () {};
+			virtual ~Jet () 
+			{
+				for (unsigned int i = myVertexTags.size(); i > -1; i--) 
+				{
+					VertexTag * tag = myVertexTags[i];
+					delete tag;
+				}
+			};
 		//
 		//	Methods
 		//

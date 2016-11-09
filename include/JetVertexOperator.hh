@@ -40,6 +40,8 @@ namespace TTbarAnalysis
 			std::vector< EVENT::ReconstructedParticle * > * CompareTracks(const std::vector< EVENT::ReconstructedParticle * > & recotracks, const std::vector< EVENT::ReconstructedParticle * > & mctracks);
 			void CompareTracks(EVENT::Vertex * mcvertex, const std::vector< EVENT::ReconstructedParticle * > & recotracks, std::vector< EVENT::ReconstructedParticle * > * missedTotal, std::vector< Particle > * convertedTotal = NULL);
 			std::vector< EVENT::ReconstructedParticle * > * GetRecoParticles(EVENT::LCCollection * prongs, EVENT::LCCollection * rel);
+			EVENT::ReconstructedParticle * GetRecoParticle( EVENT::MCParticle * prong, EVENT::LCCollection * rel);
+			EVENT::Track * GetTrack( EVENT::MCParticle * prong, EVENT::LCCollection * rel);
 			std::vector< EVENT::ReconstructedParticle * > * GetMissedTracksRel(EVENT::LCCollection * rel, std::vector< Jet * > * jets, std::vector< Particle > * converted = NULL, EVENT::LCCollection * out = NULL);
 			void CompareTracks(EVENT::Vertex * mcvertex, const std::vector< EVENT::ReconstructedParticle * > & recotracks, std::vector< EVENT::ReconstructedParticle * > * missedTotal, EVENT::LCCollection * rel, std::vector< Particle > * convertedTotal = NULL, float btag = -1.0);
 			std::vector< EVENT::ReconstructedParticle * > * CompareTracksRel(const std::vector< EVENT::MCParticle * > & recotracks, const std::vector< EVENT::ReconstructedParticle * > & mctracks);
