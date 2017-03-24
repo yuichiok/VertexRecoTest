@@ -20,7 +20,7 @@ namespace TTbarAnalysis
 		ip[0] = 0.0;
 		ip[1] = 0.0;
 		ip[2] = 0.0;
-
+		myUseMVA = true;
 	}
 	Track * JetVertexOperator::GetTrack(MCParticle * particle, LCCollection * rel)
 	{
@@ -219,6 +219,15 @@ namespace TTbarAnalysis
 					jet->SetMCPDG(mcvertex->getParameters()[1]);
 					jet->SetParticles(components);
 					jet->SetRecoVertices(vertices);
+					if (myUseMVA && nvtx > 0) 
+					{
+						MVAInputParameters parameters = produce(jet);
+						MVAReader reader;
+						vector<float> tags = reader.GetAllTags(parameters);
+						float ttag = reader.GetTrustTag(parameters);
+						jet->SetChargeTags(tags[0], tags[1], tags[2]);
+						jet->SetTrustTag(ttag);
+					}
 					result->push_back(jet);
 				}
 				else 
@@ -309,7 +318,7 @@ namespace TTbarAnalysis
 				VertexTag * tag1 = jets->at(i)->GetVertexTags()[0];
 				if (tag1->GetStatus() != EMPTY_TAG) 
 				{
-					CompareTracks(tag1->__GetMCVertex(), tag1->GetVertex()->getAssociatedParticle()->getParticles(), result,rel, converted, btag);
+					CompareTracks(tag1, tag1->GetVertex()->getAssociatedParticle()->getParticles(), result,rel, converted, btag);
 				}
 				continue;
 			}
@@ -318,8 +327,8 @@ namespace TTbarAnalysis
 			if (tag2->GetStatus() == MERGED_TAG && tag1->GetStatus() == MERGED_TAG) 
 			{
 				std::cout << "We have a merged vertex case with " << tag1->__GetMCVertex()->getAssociatedParticle()->getParticles().size() + tag2->__GetMCVertex()->getAssociatedParticle()->getParticles().size() <<" mcparticles\n";
-				CompareTracks(tag1->__GetMCVertex(), tag1->GetVertex()->getAssociatedParticle()->getParticles(), result,rel, converted,btag);
-				CompareTracks(tag2->__GetMCVertex(), tag2->GetVertex()->getAssociatedParticle()->getParticles(), result,rel, converted,btag);
+				CompareTracks(tag1, tag1->GetVertex()->getAssociatedParticle()->getParticles(), result,rel, converted,btag);
+				CompareTracks(tag2, tag2->GetVertex()->getAssociatedParticle()->getParticles(), result,rel, converted,btag);
 			}
 			if (tag2->GetStatus() == PRECISE_TAG && tag1->GetStatus() == PRECISE_TAG) 
 			{
@@ -330,26 +339,27 @@ namespace TTbarAnalysis
 				recounited.insert(recounited.end(),fromtag1reco.begin(),fromtag1reco.end());
 				recounited.insert(recounited.end(),fromtag2reco.begin(),fromtag2reco.end());
 				std::cout << "We have a 2 recovertices case with " <<  recounited.size() << " recoparticles\n";
-				CompareTracks(tag1->__GetMCVertex(), recounited, result,rel, converted, btag);
-				CompareTracks(tag2->__GetMCVertex(), recounited, result,rel, converted, btag);
+				CompareTracks(tag1, recounited, result,rel, converted, btag);
+				CompareTracks(tag2, recounited, result,rel, converted, btag);
 			}
 			if (tag1->GetStatus() == PRECISE_TAG && tag2->GetStatus() == EMPTY_TAG) 
 			{
 				
 				std::cout << "We have one vertex case with " << tag1->__GetMCVertex()->getAssociatedParticle()->getParticles().size() << " mc particles & " << tag1->__GetMCVertex()->getAssociatedParticle()->getParticles().size() << " recoparticles\n";
-				CompareTracks(tag1->__GetMCVertex(), tag1->GetVertex()->getAssociatedParticle()->getParticles(), result, rel, converted,btag);
+				CompareTracks(tag1, tag1->GetVertex()->getAssociatedParticle()->getParticles(), result, rel, converted,btag);
 			}
 			if (tag1->GetStatus() == EMPTY_TAG && tag2->GetStatus() == PRECISE_TAG) 
 			{
 				std::cout << "We have one vertex case with " << tag2->__GetMCVertex()->getAssociatedParticle()->getParticles().size() << " mc particles & " << tag2->__GetMCVertex()->getAssociatedParticle()->getParticles().size() << " recoparticles\n";
-				CompareTracks(tag2->__GetMCVertex(), tag2->GetVertex()->getAssociatedParticle()->getParticles(), result, rel, converted,btag);
+				CompareTracks(tag2, tag2->GetVertex()->getAssociatedParticle()->getParticles(), result, rel, converted,btag);
 			}
 		}
 		return result;
 	}
 
-	void JetVertexOperator::CompareTracks(Vertex * mcvertex, const vector< ReconstructedParticle * > & recotracks, vector< ReconstructedParticle * > * missedTotal, LCCollection * rel, vector< Particle > * convertedTotal, float btag)
+	void JetVertexOperator::CompareTracks(VertexTag * tag, const vector< ReconstructedParticle * > & recotracks, vector< ReconstructedParticle * > * missedTotal, LCCollection * rel, vector< Particle > * convertedTotal, float btag)
 	{
+		Vertex* mcvertex = tag->__GetMCVertex();
 		const vector< ReconstructedParticle * > mctracks = mcvertex->getAssociatedParticle()->getParticles();
 		vector< ReconstructedParticle * > recoPFOtracks = mapToPFO(recotracks);
 		vector< MCParticle * > recoRelatedPFOtracks = ParticleOperator::GetMCParticlesRel(recoPFOtracks, rel, myTrackRel);
@@ -389,7 +399,14 @@ namespace TTbarAnalysis
 			int * hits = new int[4];
 			if (matchedmissed) 
 			{
-				missedParticle.SetVertexAngle(getVertexAngle(matchedmissed, mcvertex));
+				if (tag->GetVertex()) 
+				{
+					missedParticle.SetVertexAngle(getVertexAngle(matchedmissed, tag->GetVertex()));
+				}
+				else 
+				{
+					missedParticle.SetVertexAngle(getVertexAngle(matchedmissed, mcvertex));
+				}
 				missedParticle.SetChi2(matchedmissed->getTracks()[0]->getChi2() / (float) matchedmissed->getTracks()[0]->getNdf());
 				missedParticle.SetIsReco(1);
 				hits[0] = matchedmissed->getTracks()[0]->getSubdetectorHitNumbers()[0];
@@ -406,6 +423,7 @@ namespace TTbarAnalysis
 				missedParticle.SetIsReco(0);
 			}
 			convertedTotal->push_back(missedParticle);
+			delete hits;
 			std::cout << "INFO: MISSED TRACK OFFSET:  " << offset
 				  << " VXD: " << hits[0]
 				  << " MOMENTUM: " << MathOperator::getModule(missedParticle.GetMomentum())
@@ -885,5 +903,78 @@ namespace TTbarAnalysis
 	}
 
 
+	MVAInputParameters JetVertexOperator::produce( Jet * jet)
+	{
+		TrackOperator troperator;
+		MVAInputParameters parameters;
+		parameters.btag = jet->GetBTag();
+		parameters.VtxCharge = jet->GetHadronCharge();
+		parameters.nVtxParticles = jet->GetNumberOfVertexParticles();
+		parameters.VtxMomentum = jet->GetHadronMomentum();
+		parameters.VtxDistance = jet->GetHadronDistance();
+		
+		float vtxChargeBalance = 0;
+		int vtxMinHits = 10;
+		float vtxMinOffset = 2000;
+		vector<  EVENT::Vertex * > * recovertices = jet->GetRecoVertices();
+		vector<ReconstructedParticle * > vtxParticles;
+		for (unsigned int i = 0; i < recovertices->size(); i++) 
+		{
+			for (unsigned int j = 0; j < recovertices->at(i)->getAssociatedParticle()->getParticles().size(); j++) 
+			{
+				ReconstructedParticle * particle = recovertices->at(i)->getAssociatedParticle()->getParticles()[j];
+				vtxParticles.push_back(particle);
+				float offset =  troperator.GetOffset(particle)/troperator.GetOffsetErrorSimple(particle);
+				vtxChargeBalance += particle->getCharge() * MathOperator::getModule(particle->getMomentum());
+				std::cout << "p: " <<  MathOperator::getModule(particle->getMomentum()) 
+					  << " hits: " << particle->getTracks()[0]->getSubdetectorHitNumbers()[0] 
+					  << "\n";
+				if (particle->getTracks()[0]->getSubdetectorHitNumbers()[0] < vtxMinHits) 
+				{
+					vtxMinHits = particle->getTracks()[0]->getSubdetectorHitNumbers()[0];
+				}
+				if (offset < vtxMinOffset) 
+				{
+					vtxMinOffset = offset;
+				}
+			}	
+		}
+		parameters.VtxMinHits = vtxMinHits;
+		parameters.VtxMinOffset = vtxMinOffset;
+		parameters.VtxChargeBalance = vtxChargeBalance;
+		float maxoffset = 0;
+		float maxoffsetmomentum = 0;
+		float maxoffsetangle = 0;
+		float maxoffsetcharge = 0;
+		for (unsigned int i = 0; i < jet->GetParticles()->size(); i++) 
+		{
+			ReconstructedParticle * particle = jet->GetParticles()->at(i);
+			if (particle->getCharge() != 0 && !ParticleOperator::IsDublicate(particle, vtxParticles)) 
+			{
+				float offset = troperator.GetOffset(particle)/troperator.GetOffsetErrorSimple(particle);
+				if (offset > maxoffset &&particle->getTracks()[0]->getSubdetectorHitNumbers()[0] > 0) 
+				{
+					maxoffset = offset;
+					maxoffsetmomentum = MathOperator::getModule(particle->getMomentum());
+					maxoffsetcharge = particle->getCharge();
+					std::cout << "pCharge: " << maxoffsetcharge 
+						  << "\n";
+					if (recovertices->size() > 0) 
+					{
+						maxoffsetangle =  MathOperator::getAngleBtw(particle->getMomentum(), recovertices->at(0)->getAssociatedParticle()->getMomentum());
+					}
+				}
+			}
+		}
+		std::cout << "VtxCharge: " << parameters.VtxCharge 
+			  << " vtxMinHits: " << parameters.VtxMinHits
+			  << " btag: " << parameters.btag
+			  << "\n";
+		parameters.JetMaxOffset = maxoffset;
+		parameters.JetMaxOffsetMomentum = maxoffsetmomentum;
+		parameters.JetMaxOffsetAngle = maxoffsetangle;
+		parameters.JetMaxOffsetCharge = maxoffsetcharge;
+		return parameters;
+	}
 
 }

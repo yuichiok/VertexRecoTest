@@ -6,6 +6,10 @@ namespace TTbarAnalysis
 {
 	Jet::Jet (float btag,float ctag, int number,const double * momentum)
 	{
+		myTrustTag = -1;
+		myZeroTag = -1;
+		myMinusTag = -1;
+		myPlusTag = -1;
 		myBTag = btag;
 		myCTag = ctag;
 		myNumber = number;
@@ -22,6 +26,15 @@ namespace TTbarAnalysis
 		myParticles = NULL;
 		
 	}
+	int Jet::GetCharge()
+	{
+		int result = 0;
+		for (unsigned int i = 0; i < myParticles->size(); i++) 
+		{
+			result+= myParticles->at(i)->getCharge();
+		}
+		return result;
+	}
 	void Jet::SetRecoVertices(std::vector<  EVENT::Vertex * > * vertices)
 	{
 		myRecoVertices = vertices;
@@ -37,6 +50,12 @@ namespace TTbarAnalysis
 	const vector< VertexTag * > & Jet::GetVertexTags() const
 	{
 		return myVertexTags;
+	}
+	void Jet::SetChargeTags(float minustag, float zerotag, float plustag)
+	{
+		myMinusTag = minustag;
+		myZeroTag = zerotag;
+		myPlusTag = plustag;
 	}
 	void Jet::SetBTag(float value)
 	{
@@ -114,6 +133,18 @@ namespace TTbarAnalysis
 			}
 		}
 		return maxchi;
+	}
+	float Jet::GetZeroTag()
+	{
+		return myZeroTag;
+	}
+	float Jet::GetPlusTag()
+	{
+		return myPlusTag;
+	}
+	float Jet::GetMinusTag()
+	{
+		return myMinusTag;
 	}
 	int Jet::__GetGenNumberOfVertexParticles()
 	{
@@ -220,7 +251,14 @@ namespace TTbarAnalysis
 	{
 		myParticles = new vector< ReconstructedParticle * >( particles);
 	}
-	
+	float Jet::GetTrustTag()
+	{
+		return myTrustTag;
+	}
+	void Jet::SetTrustTag(float tag)
+	{
+		myTrustTag = tag;
+	}
 	int Jet::GetMCPDG()
 	{
 		return myMCPDG;

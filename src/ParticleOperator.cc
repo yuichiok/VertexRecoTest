@@ -14,7 +14,7 @@ namespace TTbarAnalysis
 	ParticleOperator:: ParticleOperator()
 	{
 	}
-	bool ParticleOperator::CompareParticles(ReconstructedParticle * particle1, ReconstructedParticle * particle2)
+	bool ParticleOperator::CompareParticles(const ReconstructedParticle * particle1, const ReconstructedParticle * particle2)
 	{
 		//std::cout << "Comparing particles with modules " << recomodule << " & " << mcmodule << "\n";
 		if (particle1 == particle2) 
@@ -43,6 +43,20 @@ namespace TTbarAnalysis
 		}
 		//std::cout << "Particles equal!\n";
 		return true;
+	}
+	bool ParticleOperator::IsDublicate(const ReconstructedParticle * particle, const vector< ReconstructedParticle * > & data)
+	{
+		bool dublicate = false;
+		for (unsigned int j = 0; j < data.size(); j++) 
+		{
+			if (CompareParticles(particle, data[j])) 
+			{
+				//std::cout << "Dublicate found!!!!\n";
+				dublicate = true;
+				break;
+			}
+		}
+		return dublicate;
 	}
 	bool ParticleOperator::CompareParticles(MCParticle * particle1, ReconstructedParticle * particle2)
 	{

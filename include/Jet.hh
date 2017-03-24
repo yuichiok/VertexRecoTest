@@ -24,11 +24,12 @@ namespace TTbarAnalysis
 			Jet ();
 			virtual ~Jet () 
 			{
-				for (unsigned int i = myVertexTags.size(); i > -1; i--) 
+				for (int i = myVertexTags.size(); i > -1; i--) 
 				{
 					VertexTag * tag = myVertexTags[i];
 					delete tag;
 				}
+				delete myMomentum;
 			};
 		//
 		//	Methods
@@ -37,12 +38,16 @@ namespace TTbarAnalysis
 			float GetCTag();
 			void SetBTag(float value);
 			void SetCTag(float value);
+			float GetTrustTag();
+			void SetTrustTag(float tag);
 			void AddVertexTag(VertexTag * tag);
 			const std::vector< VertexTag * > & GetVertexTags() const;
 			void SetRecoVertices(std::vector<  EVENT::Vertex * > * vertices);
 			std::vector<  EVENT::Vertex * > * GetRecoVertices();
+			void SetChargeTags(float minustag, float zerotag, float plustag);
 			int GetNumberOfVertices();
 			int GetNumberOfVertexParticles();
+			int GetCharge();
 			float GetHadronCharge();
 			float GetHadronMomentum();
 			float GetHadronMass();
@@ -52,6 +57,9 @@ namespace TTbarAnalysis
 			float GetMaxVtxChi2();
 			int __GetGenNumberOfVertexParticles();
 			int __GetGenCharge();
+			float GetZeroTag();
+			float GetPlusTag();
+			float GetMinusTag();
 			const double * GetMomentum();
 			int GetMCPDG();
 			void SetMCPDG(int pdg);
@@ -63,6 +71,10 @@ namespace TTbarAnalysis
 		//
 		//	Data
 		//
+			 float myTrustTag;
+			 float myPlusTag;
+			 float myMinusTag;
+			 float myZeroTag;
 			 float myBTag;
 			 float myCTag;
 			 float myTagAngle;

@@ -8,7 +8,7 @@ namespace TTbarAnalysis
 {
 	Particle::Particle ()
 	{
-		myMomentum = NULL;
+		//myMomentum = NULL;
 		myVertex = NULL;
 		myMass = 0.0;
 		myTruthAngle = -1;
@@ -22,13 +22,13 @@ namespace TTbarAnalysis
 		myMCParticle = NULL;
 		myRecoParticle = NULL;
 	}
-	double * Particle::GetMomentum()
+	const double * Particle::GetMomentum() const
 	{
 		return myMomentum;
 	}
 	void Particle::SetMomentum(const double * momentum)
 	{
-		myMomentum = new double[3];
+		//myMomentum = new double[3];
 		for (int i = 0; i < 3; i++) 
 		{
 			myMomentum[i] = momentum[i];
@@ -152,6 +152,6 @@ namespace TTbarAnalysis
 	
 	void Particle::Assign(ReconstructedParticle * initial)
 	{
-		myMomentum = new double( *initial->getMomentum());
+		//myMomentum = new double( *initial->getMomentum());
 	}
 }

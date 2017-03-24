@@ -145,6 +145,7 @@ namespace TTbarAnalysis
 	  int _bnoffsettracks;
 	  int _bbarnoffsettracks;
 	  float _MCMass;
+	  int _totalcharge;
 	  float _btag;
 	  float _bbartag;
 	  float _bmomentum;
@@ -153,6 +154,8 @@ namespace TTbarAnalysis
 	  int _bbarnvtx;
 	  int _bcharge;
 	  int _bbarcharge;
+	  int _bjetcharge;
+	  int _bbarjetcharge;
 	  float _bptmiss;
 	  float _bbarptmiss;
 	  float _bbarcostheta;
@@ -186,6 +189,16 @@ namespace TTbarAnalysis
 	  int _status[MAXV];
 	  int _generation[MAXV];
 	  int _numberOfParticles[MAXV];
+	  float _averagepOfParticles[MAXV];
+	  float _averagesOfParticles[MAXV];
+	  float _bzeroTag;
+	  float _bminusTag;
+	  float _bplusTag;
+	  float _bbarzeroTag;
+	  float _bbarminusTag;
+	  float _bbarplusTag;
+	  float _btrustTag;
+	  float _bbartrustTag;
 	  float _energyOfParticles[MAXV][MAXV];
 	  float _momentumOfParticles[MAXV][MAXV];
 	  float _thetaOfParticles[MAXV][MAXV];
@@ -284,6 +297,8 @@ namespace TTbarAnalysis
 	  float _momentumMissedVtx[MAXV];
 	  float _distanceMissedVtx[MAXV];
 	  int _numberOfTracksMissedVtx[MAXV];
+	  float _averagepMissedVtx[MAXV];
+	  float _averagesMissedVtx[MAXV];
 	  float _momentumOfParticlesVtx[MAXV][MAXV];
 	  float _costhetaOfParticlesVtx[MAXV][MAXV];
 	  float _ptOfParticlesVtx[MAXV][MAXV];

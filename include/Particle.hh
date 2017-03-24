@@ -27,7 +27,7 @@ namespace TTbarAnalysis
 		//
 		//	Methods
 		//
-			double * GetMomentum();
+			const double * GetMomentum() const;
 			void SetMomentum(const double * momentum);
 			void SetMass(float momentum);
 			EVENT::Vertex * GetVertex();
@@ -63,7 +63,7 @@ namespace TTbarAnalysis
 		//
 		//	Data
 		//
-			double * myMomentum;
+			double myMomentum[3];
 			EVENT::ReconstructedParticle * myRecoParticle;
 			EVENT::MCParticle * myMCParticle;
 			EVENT::Vertex * myVertex;

@@ -14,6 +14,7 @@
 #include "VertexTag.hh"
 #include "Particle.hh"
 #include "Jet.hh"
+#include "MVAReader.hh"
 #ifndef _JetVertexOperator_hh
 #define _JetVertexOperator_hh
 namespace TTbarAnalysis 
@@ -43,9 +44,11 @@ namespace TTbarAnalysis
 			EVENT::ReconstructedParticle * GetRecoParticle( EVENT::MCParticle * prong, EVENT::LCCollection * rel);
 			EVENT::Track * GetTrack( EVENT::MCParticle * prong, EVENT::LCCollection * rel);
 			std::vector< EVENT::ReconstructedParticle * > * GetMissedTracksRel(EVENT::LCCollection * rel, std::vector< Jet * > * jets, std::vector< Particle > * converted = NULL, EVENT::LCCollection * out = NULL);
-			void CompareTracks(EVENT::Vertex * mcvertex, const std::vector< EVENT::ReconstructedParticle * > & recotracks, std::vector< EVENT::ReconstructedParticle * > * missedTotal, EVENT::LCCollection * rel, std::vector< Particle > * convertedTotal = NULL, float btag = -1.0);
+			//void CompareTracks(EVENT::Vertex * mcvertex, const std::vector< EVENT::ReconstructedParticle * > & recotracks, std::vector< EVENT::ReconstructedParticle * > * missedTotal, EVENT::LCCollection * rel, std::vector< Particle > * convertedTotal = NULL, float btag = -1.0);
+			void CompareTracks(VertexTag * tag, const std::vector< EVENT::ReconstructedParticle * > & recotracks, std::vector< EVENT::ReconstructedParticle * > * missedTotal, EVENT::LCCollection * rel, std::vector< Particle > * convertedTotal = NULL, float btag = -1.0);
 			std::vector< EVENT::ReconstructedParticle * > * CompareTracksRel(const std::vector< EVENT::MCParticle * > & recotracks, const std::vector< EVENT::ReconstructedParticle * > & mctracks);
 			float getVertexAngle(EVENT::ReconstructedParticle * recparticle, EVENT::Vertex * secvertex);
+			MVAInputParameters produce( Jet * jet);
 		private:
 		//
 		//	Data
@@ -54,6 +57,7 @@ namespace TTbarAnalysis
 			EVENT::LCCollection * myPFO;
 			EVENT::LCCollection * myTrackRel;
 			EVENT::LCCollection * myEGProngs;
+			bool myUseMVA;
 			float myAngleCut;
 			double ip[3];
 		//
