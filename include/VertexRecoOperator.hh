@@ -9,7 +9,7 @@
 #include "Particle.hh"
 #ifndef _VertexRecoOperator_hh
 #define _VertexRecoOperator_hh
-namespace TTbarAnalysis 
+namespace QQbarAnalysis 
 {
 	class VertexRecoOperator 
 	{
@@ -59,5 +59,5 @@ namespace TTbarAnalysis
 			std::vector< VertexTag * > * refineChain(std::vector< VertexTag * > * refined, std::vector< VertexTag * > & bvtx);
 			std::vector< EVENT::ReconstructedParticle * > * getMissedTracks(const std::vector< EVENT::ReconstructedParticle * > & recotracks, const std::vector< EVENT::ReconstructedParticle * > & mctracks);
 	};
-} /* TTbarAnalysis */
+} /* QQbarAnalysis */
 #endif

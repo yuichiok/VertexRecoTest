@@ -13,7 +13,7 @@
 #include "RecoJet.hh"
 #ifndef _ComparisonOperator_hh
 #define _ComparisonOperator_hh
-namespace TTbarAnalysis 
+namespace QQbarAnalysis 
 {
 	class ComparisonOperator 
 	{

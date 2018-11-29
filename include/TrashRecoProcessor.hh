@@ -39,7 +39,7 @@ using namespace lcio ;
 using namespace marlin ;
 
 
-namespace TTbarAnalysis 
+namespace QQbarAnalysis 
 {
 	class TrashRecoProcessor : public Processor {
 	  
@@ -333,7 +333,7 @@ namespace TTbarAnalysis
 	  float _costhetaOfBuild[MAXV2];
 	} ;
 		
-} /* TTbarAnalysis */
+} /* QQbarAnalysis */
 
 #endif
 

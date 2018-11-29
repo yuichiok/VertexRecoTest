@@ -1,7 +1,13 @@
+#ifndef _JetVertexOperator_hh
+#define _JetVertexOperator_hh
+
+#include "marlin/Processor.h"
+#include "lcio.h"
 #include <stdlib.h>
 #include <vector>
 #include <string>
 #include <iostream>
+#include <EVENT/LCObject.h>
 #include <EVENT/LCCollection.h>
 #include <EVENT/ReconstructedParticle.h>
 #include <EVENT/MCParticle.h>
@@ -15,9 +21,11 @@
 #include "Particle.hh"
 #include "Jet.hh"
 #include "MVAReader.hh"
-#ifndef _JetVertexOperator_hh
-#define _JetVertexOperator_hh
-namespace TTbarAnalysis 
+
+using namespace lcio ;
+using namespace marlin ;
+
+namespace QQbarAnalysis 
 {
 	class JetVertexOperator 
 	{
@@ -65,8 +73,8 @@ namespace TTbarAnalysis
 		//
 			//Jet * composeJet(ReconstructedParticle * particle, std::vector< Vertex * > recovertices, const float tag);
 			void produceTags(Jet * jet, std::vector< EVENT::Vertex * > & vertices, std::vector< VertexTag * > * tags = NULL);
-			std::vector< Vertex * > * convert(const std::vector< LCObject * > & objs);
-			std::vector< VertexTag * > * tagOneVertex(std::vector< EVENT::Vertex * > & mcvertices, Vertex * recovertex);
+			std::vector< EVENT::Vertex * > * convert(const std::vector< EVENT::LCObject * > & objs);
+			std::vector< VertexTag * > * tagOneVertex(std::vector< EVENT::Vertex * > & mcvertices, EVENT::Vertex * recovertex);
 			bool compareToVertex(EVENT::Vertex * mcvertex,  std::vector< EVENT::Vertex * > * vertices);
 			std::vector< EVENT::ReconstructedParticle * > mapToPFO(const std::vector< EVENT::ReconstructedParticle * > & secondaries);
 			std::vector< EVENT::MCParticle * > mapToProngs(const std::vector< EVENT::ReconstructedParticle * > & secondaries);

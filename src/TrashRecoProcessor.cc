@@ -3,9 +3,9 @@ using std::vector;
 using EVENT::Vertex;
 using EVENT::MCParticle;
 using IMPL::VertexImpl;
-using TTbarAnalysis::MathOperator;
+using QQbarAnalysis::MathOperator;
 
-namespace TTbarAnalysis 
+namespace QQbarAnalysis 
 {
 	TrashRecoProcessor aTrashRecoProcessor ;
 	TrashRecoProcessor::TrashRecoProcessor() : Processor("TrashRecoProcessor") {
@@ -21,7 +21,7 @@ namespace TTbarAnalysis
 	            _colSecName ,
 	            std::string("BuildUpVertex")
 	    );
-	    registerInputCollection( LCIO::VERTEX,
+	    registerInputCollection( LCIO::RECONSTRUCTEDPARTICLE,
 	            "PFOCollectionName" , 
 	            "Name of the PFO collection"  ,
 	            _colPFOName ,
@@ -52,7 +52,7 @@ namespace TTbarAnalysis
         	    _colMissVtxName ,
            	 std::string("MissedParticlesVtx")
 	    );
-	    registerInputCollection( LCIO::RECONSTRUCTEDPARTICLE,
+	    registerInputCollection( LCIO::LCRELATION,
         	    "OutputRelName" , 
 	            "Name of the missed collection"  ,
         	    _colRelName ,
@@ -76,7 +76,7 @@ namespace TTbarAnalysis
 		_colJetsName,
 	    	std::string("FinalJets")
 	    );
-	    registerInputCollection( LCIO::RECONSTRUCTEDPARTICLE,
+	    registerInputCollection( LCIO::LCRELATION,
 	    	"JetRelCollectionName",
 		"Name of the Jet relation collection",
 		_colJetsRelName,
@@ -87,12 +87,6 @@ namespace TTbarAnalysis
 		"Name of the Track relation collection",
 		_colTrackRelName,
 	    	std::string("MarlinTrkTracksMCTruthLink")
-	    );
-	    registerInputCollection( LCIO::VERTEX,
-	    	"MCVertexCollectionName",
-		"Name of the MCVertex collection",
-		_colMCName,
-	    	std::string("MCVertex")
 	    );
 	    _angleAcceptance = 0.2;
 	    registerProcessorParameter("angleAcceptance",
@@ -128,7 +122,7 @@ namespace TTbarAnalysis
 		_colRecoProngsTracksName,
 	    	std::string("RecoProngsTracks")
 	    );
-		_hfilename = "RecoTest.root";
+		//_hfilename = "RecoTest.root";
 	    registerProcessorParameter("ROOTFileName" , 
 	            "ROOT File Name"  ,
         	    _hfilename,
@@ -1330,6 +1324,7 @@ namespace TTbarAnalysis
 	
 	void TrashRecoProcessor::Write (Vertex * vertex)
 	{
+		std::cout << "vertex Write function begin ..." << vertex << std::endl;
 		const float * position = vertex->getPosition();
 		for (int i = 0; i < 3; i++) 
 		{
@@ -1378,10 +1373,17 @@ namespace TTbarAnalysis
 					//std::cout << "PID: " << component->getParticleIDs()[k]->getPDG() << " " <<  component->getParticleIDs()[k]->getLikelihood() << "\n";
 				}
 				int pid = _myPIDHandler->getAlgorithmID("HadronTagger");
+
+				std::cout << "_myPIDHandler->getParticleID(component,pid).getParameters().size() check = " << _myPIDHandler->getParticleID(component,pid).getParameters().size() << std::endl;
+				//std::cout << "_myPIDHandler->getParameterNames(pid).size() = " << _myPIDHandler->getParameterNames(pid).size() << std::endl;
+				std::cout << "algorithm id = "   << pid << std::endl;
+				std::cout << "algorithm name = " << _myPIDHandler->getAlgorithmName(pid) << std::endl;
+
 				std::cout << "-----\nPID: " << _myPIDHandler->getParticleID(component, pid).getPDG() << " (" << _trueTypeOfParticles[_numberOfTagged][j] << ") p: " << MathOperator::getModule( component->getMomentum()) << "\n";
 				for (unsigned int k = 0; k < _myPIDHandler->getParticleID(component,pid).getParameters().size(); k++) 
 				{
-					std::cout << "Parameters: " << _myPIDHandler->getParameterNames(pid)[k] << " " << _myPIDHandler->getParticleID(component,pid).getParameters()[k] << "\n";
+					//std::cout << "Parameters: " << _myPIDHandler->getParameterNames(pid)[k] << " " << _myPIDHandler->getParticleID(component,pid).getParameters()[k] << "\n";
+					std::cout << "Parameters: " << _myPIDHandler->getParticleID(component,pid).getParameters()[k] << "\n";
 				}
 				_pidTypeOfParticles[_numberOfTagged][j] =  _myPIDHandler->getParticleID(component,pid).getPDG();
 				_pidLikeOfParticles[_numberOfTagged][j] =  _myPIDHandler->getParticleID(component,pid).getLikelihood();
@@ -1489,10 +1491,13 @@ namespace TTbarAnalysis
 		_distanceFromIP[_numberOfTagged] = distance;
 	//	_numberTagged += _numberOfParticles[_numberOfTagged];
 		//std::cout << "d(V_p,V_i) = " << distance << "; P(V_i) = " << vertex->getProbability() << "; Chi^2(V_i) = " << vertex->getChi2() << '\n';
+		std::cout << "vertex Write function ends here ..." << vertex << std::endl;
 		
 	}
 	void TrashRecoProcessor::Write (VertexTag * tag)
 	{
+		std::cout << "Enters Write function" << std::endl;
+
 		if (!tag) 
 		{
 			return;
@@ -1512,9 +1517,11 @@ namespace TTbarAnalysis
 		_precisionT[_numberOfTagged] = MathOperator::getDistanceTo(recopos, direction, mcpos);
 		_truthNumber[_numberOfTagged] = (tag->GetStatus() == PRECISE_TAG)? tag->__GetMCTrackNumber():-1;
 		std::cout << "Reco dist: " <<  MathOperator::getModule(recopos) << " gen dist: " << MathOperator::getModule(mcpos) << " precision: " << _precision[_numberOfTagged] << "\n";
-		Vertex * vertex = tag->GetVertex();
+		if(tag->GetVertex()) {Vertex * vertex = tag->GetVertex();
+    std::cout << "vertex" << std::endl;
 		Write (vertex);
 		_numberOfTagged++;
+	}
 	}
 	void TrashRecoProcessor::ClearVariables()
 	{
@@ -1695,4 +1702,4 @@ namespace TTbarAnalysis
 	    // 	    << std::endl ;
 	
 	}
-} /* TTbarAnalysis */
+} /* QQbarAnalysis */

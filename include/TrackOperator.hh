@@ -7,7 +7,7 @@
 #include "MathOperator.hh"
 #ifndef TrackOperator_hh
 #define TrackOperator_hh 1
-namespace TTbarAnalysis
+namespace QQbarAnalysis
 {
 	struct GConfig
 	{

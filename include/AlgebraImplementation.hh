@@ -6,7 +6,7 @@
 #include <EVENT/ReconstructedParticle.h>
 #include "TMatrixD.h"
 
-namespace TTbarAnalysis
+namespace QQbarAnalysis
 {
 	class AlgebraImplementation 
 	{

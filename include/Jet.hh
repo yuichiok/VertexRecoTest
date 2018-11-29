@@ -8,7 +8,7 @@
 
 #ifndef _Jet_hh
 #define _Jet_hh
-namespace TTbarAnalysis 
+namespace QQbarAnalysis 
 {
 	class Jet 
 	{

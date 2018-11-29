@@ -12,7 +12,7 @@
 #include "MathOperator.hh"
 #ifndef _ParticleOperator_hh
 #define _ParticleOperator_hh
-namespace TTbarAnalysis 
+namespace QQbarAnalysis 
 {
 	class ParticleOperator 
 	{

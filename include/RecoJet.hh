@@ -8,7 +8,7 @@
 
 #ifndef _RecoJet_hh
 #define _RecoJet_hh
-namespace TTbarAnalysis 
+namespace QQbarAnalysis 
 {
 	class RecoJet : public IMPL::ReconstructedParticleImpl
 	{

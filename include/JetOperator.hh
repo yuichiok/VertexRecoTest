@@ -1,3 +1,8 @@
+#ifndef _JetOperator_hh
+#define _JetOperator_hh
+
+#include "marlin/Processor.h"
+#include "lcio.h"
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
@@ -12,9 +17,7 @@
 #include <EVENT/Vertex.h>
 #include "MathOperator.hh"
 
-#ifndef _JetOperator_hh
-#define _JetOperator_hh
-namespace TTbarAnalysis 
+namespace QQbarAnalysis 
 {
 	class JetOperator 
 	{

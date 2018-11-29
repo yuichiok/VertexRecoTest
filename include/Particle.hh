@@ -6,7 +6,7 @@
 #include <EVENT/MCParticle.h>
 #ifndef _Particle_hh
 #define _Particle_hh
-namespace TTbarAnalysis
+namespace QQbarAnalysis
 {
 	class Particle 
 	{

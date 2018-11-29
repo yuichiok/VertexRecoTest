@@ -4,7 +4,7 @@
 #include <EVENT/ReconstructedParticle.h>
 #ifndef _VertexTag_hh
 #define _VertexTag_hh
-namespace TTbarAnalysis
+namespace QQbarAnalysis
 {
 		enum TagStatus
 		{
