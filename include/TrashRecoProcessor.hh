@@ -305,6 +305,9 @@ namespace QQbarAnalysis
 	  float _offsetOfParticlesVtx[MAXV][MAXV];
 	  float _angleOfParticlesVtx[MAXV][MAXV];
 	  int _otherMissedVtx[MAXV];
+	  
+		// Yuichi Test
+		int _MCpidMissed[MAXV];
 
 	  int _numberOfSecondaries;
 	  int _misrecoNumber;

@@ -143,10 +143,11 @@ namespace QQbarAnalysis
 					}
 
 					// this is a test
+					/*
 					std::cerr << "positionmc [0] = " << positionmc[0] << ", ";
 					std::cerr << "[1] = " << positionmc[1] << ", ";
 					std::cerr << "[2] = " << positionmc[2] << std::endl;
-					
+					*/
 
 
 					float angle = MathOperator::getAngleBtw(mcparticle->getMomentum(), jetpart->getMomentum());

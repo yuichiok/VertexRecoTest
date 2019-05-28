@@ -312,6 +312,9 @@ namespace QQbarAnalysis
 		_hMissedTree->Branch("distanceIPMissed", _distanceIPMissed, "distanceIPMissed[numberOfMissed]/F");
 		_hMissedTree->Branch("btagMissed", _btagMissed, "btagMissed[numberOfMissed]/F");
 
+		// Yuichi Test
+		_hMissedTree->Branch("MCpidMissed", _MCpidMissed, "MCpidMissed[numberOfMissed]/I");
+
 		_hMissedVertexTree = new TTree( "MissedVertex", "My vertex tree!" );
 		_hMissedVertexTree->Branch("numberOfMissedVtx", &_numberOfMissedVtx, "numberOfMissedVtx/I");
 		_hMissedVertexTree->Branch("costhetaMissedVtx", _costhetaMissedVtx, "costhetaMissedVtx[numberOfMissedVtx]/F");
@@ -720,6 +723,9 @@ namespace QQbarAnalysis
 			_genMissed[i] = missed->at(i).GetGeneration();
 			_truthAngleMissed[i] = missed->at(i).GetTruthAngle();
 			_vertexAngleMissed[i] = missed->at(i).GetVertexAngle();
+			
+			
+			
 			if (_vertexAngleMissed[i] > 0.05) 
 			{
 				std::cout << "WARNING: Vtx angle is " << _vertexAngleMissed[i] << "\n";
@@ -756,6 +762,12 @@ namespace QQbarAnalysis
 					  << " pdg: " << missed->at(i).GetMCParticle()->getPDG()
 					  << "\n";
 			}
+
+			// Yuichi Test
+
+			_MCpidMissed[i] =  missed->at(i).GetMCParticle()->getPDG();
+
+
 		}
 		_numberMissed2 += _numberOfMissed;
 		//evt->addCollection(reco, _colMissName);
@@ -1372,7 +1384,8 @@ namespace QQbarAnalysis
 				{
 					//std::cout << "PID: " << component->getParticleIDs()[k]->getPDG() << " " <<  component->getParticleIDs()[k]->getLikelihood() << "\n";
 				}
-				int pid = _myPIDHandler->getAlgorithmID("HadronTagger");
+				//int pid = _myPIDHandler->getAlgorithmID("HadronTagger");
+				int pid = _myPIDHandler->getAlgorithmID("KaonTagger");
 
 				std::cout << "_myPIDHandler->getParticleID(component,pid).getParameters().size() check = " << _myPIDHandler->getParticleID(component,pid).getParameters().size() << std::endl;
 				//std::cout << "_myPIDHandler->getParameterNames(pid).size() = " << _myPIDHandler->getParameterNames(pid).size() << std::endl;
