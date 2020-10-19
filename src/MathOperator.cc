@@ -461,7 +461,8 @@ namespace QQbarAnalysis
 		}
 		std::cout << '\n';*/
 		vector< float > direction = getDirection(converted);
-		double pt[3];
+		//double pt[3];
+		double * pt = new double[3];
 		double product = 0.0;
 		for (int i = 0; i < 3; i++) 
 		{
@@ -482,6 +483,7 @@ namespace QQbarAnalysis
 		{
 			pts.push_back(getPtOnVector(vectors[i], target));
 		}
+
 		for (int i = 0; i < 3; i++) 
 		{
 			for (int j = 0; j < vectors.size(); j++) 
@@ -489,6 +491,12 @@ namespace QQbarAnalysis
 				sum[i] += pts[j][i]; 
 			}
 		}
+
+		while(pts.size()>0){			
+			delete pts.back();
+			pts.pop_back();
+		}
+
 		return getModule(sum);
 	}
 	double * MathOperator::toDoubleArray(const float * target, int size)
