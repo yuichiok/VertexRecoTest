@@ -636,6 +636,7 @@ namespace QQbarAnalysis
 			delete converted;	
 				
 		}
+
 		catch( DataNotAvailableException &e)
 		{
 			streamlog_out(ERROR) << e.what() << std::endl ;
@@ -732,7 +733,7 @@ namespace QQbarAnalysis
 			}
 			Track * track = ParticleOperator::GetTrackRel(missed->at(i).GetMCParticle(), trackrel);
 			_hastrackMissed[i] = (track)? 1 : 0;
-			_omegatrackMissed[i] = (track)? track->getOmega() : 0;
+			_omegatrackMissed[i] = (track)? track->getOmega() : 0;			
 			_distanceIPMissed[i] =  MathOperator::getModule(missed->at(i).GetMCParticle()->getVertex());
 			_deltapMissed[i] = GetDeltaP(missed->at(i).GetRecoParticle());
 			if (missed->at(i).GetRecoParticle() && missed->at(i).GetRecoParticle()->getTracks().size() > 0 ) 
@@ -763,12 +764,10 @@ namespace QQbarAnalysis
 					  << "\n";
 			}
 
-			// Yuichi Test
-
 			_MCpidMissed[i] =  missed->at(i).GetMCParticle()->getPDG();
 
-
 		}
+
 		_numberMissed2 += _numberOfMissed;
 		//evt->addCollection(reco, _colMissName);
 		evt->addCollection(mcmissed, _colMissName);
